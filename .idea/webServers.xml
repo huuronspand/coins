@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="0adfcfec-f642-432b-bfa7-0f9fe710e296" name="coins_huuronspand" url="http://ftp.huuronspand.nl">
+        <fileTransfer host="ftp.huuronspand.nl" port="21" username="marcohans">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="21" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
