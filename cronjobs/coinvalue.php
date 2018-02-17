@@ -11,7 +11,7 @@ curl_close($ch);
 
 $coindata = json_decode($data);
 
-var_dump($coindata);
+//var_dump($coindata);
 
 $db = new PDO('mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4', $_GLOBALS['dbUser'], $_GLOBALS['dbPass']);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
