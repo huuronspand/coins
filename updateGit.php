@@ -46,7 +46,7 @@ $headers = apache_request_headers();
 
 $payloadRaw = file_get_contents( 'php://input' );
 $signature = str_replace("sha1=","",$headers['X-Hub-Signature']);
-$compare = hash_hmac("sha1", $payload, $config->secret);
+$compare = hash_hmac("sha1", $payloadRaw, $config->secret);
 
 if($signature == $compare) {
     $payload = json_decode($payloadRaw);
