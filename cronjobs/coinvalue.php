@@ -27,7 +27,11 @@ foreach ($coindata as $coin)
     $statement = $db->prepare("INSERT INTO coinstats(timestamp,id,name,symbol,rank,price_usd,price_btc,24h_volume_usd,market_cap_usd,available_supply,total_supply,max_supply,percent_change_1h,percent_change_24h,percent_change_7d,last_updated)
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
-    $statement->execute(array($coin->timestamp,$coin->id,$coin->name,$coin->symbol,$coin->rank,$coin->price_usd,$coin->price_btc,$coina['24h_volume_usd'],$coin->market_cap_usd,$coin->available_supply,$coin->total_supply,$coin->max_supply,$coin->percent_change_1h,$coin->percent_change_24h,$coin->percent_change_7d,$coin->last_updated));
+    try {
+        $statement->execute(array($coin->timestamp,$coin->id,$coin->name,$coin->symbol,$coin->rank,$coin->price_usd,$coin->price_btc,$coina['24h_volume_usd'],$coin->market_cap_usd,$coin->available_supply,$coin->total_supply,$coin->max_supply,$coin->percent_change_1h,$coin->percent_change_24h,$coin->percent_change_7d,$coin->last_updated));
+    } catch (Exception $e) {
+        echo 'Caught exception: ',  $e->getMessage(), "\n";
+    }
 }
 
 
@@ -37,3 +41,5 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 var_dump($results);
 
 ?>
+
+CREATE USER 'coins'@'%%' IDENTIFIED BY 'qewdqwfe44fwwe4ffw4efw4';
