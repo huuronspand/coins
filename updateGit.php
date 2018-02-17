@@ -110,7 +110,7 @@ if($signature == $compare) {
 
 
     } else {
-        echo("wrong branch");
+        echo(git_current_branch($cwd)." wrong branch");
     }
 } else {
     echo "no auth";
