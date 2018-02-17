@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL);
+
 require "/var/www/coins/config.php";
 
 $ch = curl_init();
@@ -12,13 +12,11 @@ $data = curl_exec($ch);
 curl_close($ch);
 
 $coindata = json_decode($data);
-phpinfo();
-//var_dump($coindata);
-echo 'mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4'. $_GLOBALS['dbUser'];
+error_reporting(E_ALL);
 
 $db = new PDO('mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4', $_GLOBALS['dbUser'], $_GLOBALS['dbPass']);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+echo "oke tot hier?";
 foreach ($coindata as $coin)
 {
     $coina = (array)$coin;
