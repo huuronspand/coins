@@ -13,7 +13,7 @@ $coindata = json_decode($data);
 
 var_dump($coindata);
 
-$db = new PDO('mysql:host=104.199.87.144;dbname=coins;charset=utf8mb4', 'root', 'xiObe3665dksyiLD');
+$db = new PDO('mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4', $_GLOBALS['dbUser'], $_GLOBALS['dbPass']);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 foreach ($coindata as $coin)
