@@ -1,5 +1,5 @@
 <?php
-
+error_reporting(E_ALL);
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_HEADER, 0);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
