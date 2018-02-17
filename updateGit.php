@@ -44,12 +44,12 @@ include "/var/www/coins/gitConfig.php";
 
 $headers = apache_request_headers();
 
-$payload = file_get_contents( 'php://input' );
+$payloadRaw = file_get_contents( 'php://input' );
 $signature = str_replace("sha1=","",$headers['X-Hub-Signature']);
 $compare = hash_hmac("sha1", $payload, $config->secret);
 
 if($signature == $compare) {
-    $payload = json_decode($payload);
+    $payload = json_decode($payloadRaw);
 
     // which branch was committed?
     $branch = str_replace("refs/heads/", "", $payload->ref);
@@ -110,7 +110,8 @@ if($signature == $compare) {
 
 
     } else {
-        echo("---".$branch."---".git_current_branch($cwd)." wrong branch");
+        echo($payloadRaw"---".$branch."---".git_current_branch($cwd)." wrong branch");
+        var_dump($payload);
     }
 } else {
     echo "no auth";
