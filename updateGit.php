@@ -65,7 +65,7 @@ if($signature == $compare) {
     if ($branch == git_current_branch($cwd)) {
 
         // pull from $branch
-        $cmd = sprintf('git pull origin %s', $branch);
+        $cmd = sprintf('sudo git pull origin %s', $branch);
         $result = syscall($cmd, $cwd);
 
         $output = '';
