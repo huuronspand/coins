@@ -17,7 +17,7 @@ try {
     $db = new PDO('mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4', $_GLOBALS['dbUser'], $_GLOBALS['dbPass']);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (Exception $e) {
-    echo 'Caught exception: ',  $e->getMessage(), "\n";
+    echo 'Not possible to connect to mysql: ',  $e->getMessage(), "\n";
 }
 
 foreach ($coindata as $coin)
@@ -28,18 +28,18 @@ foreach ($coindata as $coin)
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     try {
+        echo "-";
         $statement->execute(array($coin->timestamp,$coin->id,$coin->name,$coin->symbol,$coin->rank,$coin->price_usd,$coin->price_btc,$coina['24h_volume_usd'],$coin->market_cap_usd,$coin->available_supply,$coin->total_supply,$coin->max_supply,$coin->percent_change_1h,$coin->percent_change_24h,$coin->percent_change_7d,$coin->last_updated));
     } catch (Exception $e) {
-        echo 'Caught exception: ',  $e->getMessage(), "\n";
+        echo 'Insert into coinstats not working: ',  $e->getMessage(), "\n";
     }
 }
 
-
+/*
 $stmt = $db->query('SELECT * FROM coinstats');
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 var_dump($results);
-
+*/
 ?>
 
-CREATE USER 'coins'@'%%' IDENTIFIED BY 'qewdqwfe44fwwe4ffw4efw4';
