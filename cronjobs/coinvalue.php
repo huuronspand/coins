@@ -12,7 +12,7 @@ $data = curl_exec($ch);
 curl_close($ch);
 
 $coindata = json_decode($data);
-
+phpinfo();
 //var_dump($coindata);
 echo 'mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4'. $_GLOBALS['dbUser'];
 
