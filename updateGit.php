@@ -49,6 +49,9 @@ $signature = str_replace("sha1=","",$headers['X-Hub-Signature']);
 $compare = hash_hmac("sha1", $payloadRaw, $config->secret);
 
 if($signature == $compare) {
+
+    $payloadRaw = str_replace("payload=","",$payloadRaw);
+    $payloadRaw = urldecode($payloadRaw);
     $payload = json_decode($payloadRaw);
 
     // which branch was committed?
@@ -110,8 +113,7 @@ if($signature == $compare) {
 
 
     } else {
-        echo($payloadRaw."---".$branch."---".git_current_branch($cwd)." wrong branch");
-        var_dump($payload);
+        echo("Commit branche: ".$branch."--- Current branch server: ".git_current_branch($cwd)." wrong branch");
     }
 } else {
     echo "no auth";
