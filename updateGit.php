@@ -110,7 +110,7 @@ if($signature == $compare) {
 
 
     } else {
-        echo($payloadRaw"---".$branch."---".git_current_branch($cwd)." wrong branch");
+        echo($payloadRaw."---".$branch."---".git_current_branch($cwd)." wrong branch");
         var_dump($payload);
     }
 } else {
