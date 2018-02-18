@@ -13,9 +13,9 @@ try {
     echo 'Not possible to connect to mysql: ',  $e->getMessage(), "\n";
 }
 
-$savings = 10000;
+$savings = 50000;
 $savingsInCoins = 0;
-$defaultBuyAmount = 1000;
+$defaultBuyAmount = 5000;
 $portfolioMaxLength = $savings / $defaultBuyAmount;
 $topCoins = array();
 $portfolio = array();
@@ -25,17 +25,19 @@ $oneDay = 24*60*60;
 
 function buyCoin($coinCode,$coinInfo)
 {
-    global $portfolio;
+    global $portfolio,$savings,$savingsInCoins,$defaultBuyAmount;
     $portfolio[$coinCode] = $coinInfo;
     echo "buy " . $coinCode . "<br/>";
+    $savings = $savings - $defaultBuyAmount;
     return $portfolio;
 }
-function sellCoin($coinCode)
+function sellCoin($coinCode,$coinInfo)
 {
-    global $portfolio;
+    global $portfolio,$savings,$savingsInCoins,$defaultBuyAmount;
     /* out of top 10, more than 100 rise ......? */
     unset($portfolio[$coinCode]);
-    echo "sell " . $coinCode . "<br/>";
+    echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
+    $savings = $savings + (1 + ($coinInfo["percent_change_24h"]/100)) * $defaultBuyAmount;
     return $portfolio;
 }
 
@@ -89,7 +91,7 @@ for ($t = 0;  $t < $simDays; $t++)
                     ($topCoin['percent_change_24h'] < 0) /* coin is doing bad */
                )
             {
-                sellCoin($topCoin['id']);
+                sellCoin($topCoin['id'],$portfolio[$topCoin['id']] );
             }
             $counter++;
         }
@@ -110,9 +112,9 @@ for ($t = 0;  $t < $simDays; $t++)
                 }
                 $i = count($portfolio);
             }
-
         }
     }
+    echo "<hr/>saving:" . $savings . ", in portfolio:" . count($portfolio) * $defaultBuyAmount;
 }
 
 
