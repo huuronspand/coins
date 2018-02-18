@@ -1,4 +1,5 @@
 <?php
+echo $_SERVER['SERVER_NAME'];die;
 $_GLOBALS['dbLocation'] =  '35.205.178.111';
 $_GLOBALS['db'] = 'coinstats';
 $_GLOBALS['dbUser'] = 'coins';
