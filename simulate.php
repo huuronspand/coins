@@ -41,12 +41,30 @@ function buyCoin($coinCode,$coinInfo)
 }
 function sellCoin($coinCode,$coinInfo)
 {
-    global $portfolio,$savings,$savingsInCoins,$defaultBuyAmount;
+    global $portfolio,$savings,$defaultBuyAmount;
     /* out of top 10, more than 100 rise ......? */
     unset($portfolio[$coinCode]);
     echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
     $savings = $savings + (1 + ($coinInfo["percent_change_24h"]/100)) * $defaultBuyAmount;
     return $portfolio;
+}
+
+function shouldSell($topCoin, $counter)
+{
+    global $portfolio, $portfolioMaxLength;
+    $result = false;
+    if  (
+        /* we have a in portfolio coin which is out op top x today */
+        (array_key_exists($topCoin['id'], $portfolio) && $counter > $portfolioMaxLength)
+        ||
+        /* coin is doing bad */
+        ($topCoin['percent_change_24h'] < 0)
+        )
+    {
+        $result = true;
+    }
+
+  return $result;
 }
 
 function getTopCoins($timestamp)
@@ -90,18 +108,14 @@ for ($t = 0;  $t < $simDays; $t++)
     if ($topCoins)
     {
         /*** sell first ****/
-        $counter = 1;
+        $positionInTopCoins = 1;
         foreach ($topCoins as $topCoin)
         {
-            if (
-                    (array_key_exists($topCoin['id'], $portfolio) && $counter > $portfolioMaxLength) /* we have the coin and out op top x today */
-                    ||
-                    ($topCoin['percent_change_24h'] < 0) /* coin is doing bad */
-               )
+            if (shouldSell($topCoin, $positionInTopCoins) )
             {
                 sellCoin($topCoin['id'],$portfolio[$topCoin['id']] );
             }
-            $counter++;
+            $positionInTopCoins++;
         }
         /*** then buy ****/
 
