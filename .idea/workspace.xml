@@ -37,8 +37,8 @@
       <file leaf-file-name="coinvalue.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cronjobs/coinvalue.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="5" column="20" selection-start-line="5" selection-start-column="20" selection-end-line="5" selection-end-column="20" />
+            <state relative-caret-position="54">
+              <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="20" selection-end-column="1" />
               <folding>
                 <marker date="1518894669734" expanded="true" signature="1627:1661" placeholder="Insert into coinstats... " />
               </folding>
@@ -49,8 +49,24 @@
       <file leaf-file-name="simulate.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/simulate.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="418">
-              <caret line="45" column="21" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
+            <state relative-caret-position="400">
+              <caret line="71" column="20" selection-start-line="71" selection-start-column="20" selection-end-line="71" selection-end-column="20" />
+              <folding>
+                <marker date="1518964752449" expanded="true" signature="1063:1169" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518964752449" expanded="true" signature="1063:1171" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518964752449" expanded="true" signature="1063:1173" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518964752449" expanded="true" signature="1063:1185" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518964752449" expanded="true" signature="1063:1252" placeholder="SELECT * FRO... coinstats" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -222,12 +238,12 @@
       <workItem from="1518788423588" duration="2355000" />
       <workItem from="1518806087564" duration="1028000" />
       <workItem from="1518947086741" duration="119000" />
-      <workItem from="1518948548467" duration="1727000" />
+      <workItem from="1518948548467" duration="3340000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10262000" />
+    <option name="totallyTimeSpent" value="11875000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="49" y="26" width="1680" height="955" extended-state="0" />
@@ -356,10 +372,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/cronjobs/coinvalue.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="20" selection-start-line="5" selection-start-column="20" selection-end-line="5" selection-end-column="20" />
+        <state relative-caret-position="54">
+          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="20" selection-end-column="1" />
           <folding>
             <marker date="1518894669734" expanded="true" signature="1627:1661" placeholder="Insert into coinstats... " />
           </folding>
@@ -368,9 +392,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/simulate.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="45" column="21" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
-          <folding />
+        <state relative-caret-position="400">
+          <caret line="71" column="20" selection-start-line="71" selection-start-column="20" selection-end-line="71" selection-end-column="20" />
+          <folding>
+            <marker date="1518964752449" expanded="true" signature="1063:1169" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518964752449" expanded="true" signature="1063:1171" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518964752449" expanded="true" signature="1063:1173" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518964752449" expanded="true" signature="1063:1185" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518964752449" expanded="true" signature="1063:1252" placeholder="SELECT * FRO... coinstats" />
+          </folding>
         </state>
       </provider>
     </entry>
