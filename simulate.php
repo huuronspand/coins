@@ -16,15 +16,18 @@ try {
 $savings = 10000;
 $savingsInCoins = 0;
 $defaultBuyAmount = 1000;
+$portfolioMaxLength = $savings / $defaultBuyAmount;
 $topCoins = array();
 $portfolio = array();
 $simStartTimestamp = 1518876000;
 $simDays = 10;
+$oneDay = 24*60*60;
 
-function buyCoin($coinInfo)
+function buyCoin($coinCode,$coinInfo)
 {
     global $portfolio;
-    $portfolio[$coinInfo->coinCode] = $coinInfo;
+    $portfolio[$coinCode] = $coinInfo;
+    echo "buy " . $coinCode . "<br/>";
     return $portfolio;
 }
 function sellCoin($coinCode)
@@ -32,17 +35,20 @@ function sellCoin($coinCode)
     global $portfolio;
     /* out of top 10, more than 100 rise ......? */
     unset($portfolio[$coinCode]);
+    echo "sell " . $coinCode . "<br/>";
     return $portfolio;
 }
 
 function getTopCoins($timestamp)
 {
-    global $db;
+    global $db, $oneDay;
     $sql = "SELECT * FROM coinstats.coinstats
-            WHERE market_cap_usd > 1000000000
-            and timestamp > ".$timestamp." 
-            order by percent_change_24h desc
-            limit 10";
+            WHERE market_cap_usd > 100000000
+            and timestamp between unix_timestamp(Date(from_unixtime(".$timestamp."))) 
+                            and  unix_timestamp(Date(from_unixtime(".($timestamp + $oneDay).")))
+                            and  percent_change_24h > 0
+            order by timestamp desc, percent_change_24h desc
+            limit 20";
     $result = $db->query($sql);
     $topCoins = array();
     if($result !== false) {
@@ -55,19 +61,60 @@ function getTopCoins($timestamp)
     return $topCoins;
 }
 
-$coinInfo = new stdClass();
-$coinInfo->coinCode = 'BTC';
-$coinInfo->amount = 100;
-$coinInfo->valueInEuro = 200;
-$portfolio = buyCoin( $coinInfo);
 
 
-$coinInfo = new stdClass();
-$coinInfo->coinCode = 'ETH';
-$coinInfo->amount = 200;
-$coinInfo->valueInEuro = 300;
-$portfolio = buyCoin( $coinInfo);
-$portfolio = sellCoin( 'BTC' );
-$topCoins = getTopCoins(1);
-var_dump($topCoins);
+
+
+
+
+for ($t = 0;  $t < $simDays; $t++)
+{
+
+    echo "<hr/>Day " . $t . "<br/>";
+
+
+    $timestamp = $simStartTimestamp + $t * $oneDay;
+    $topCoins = getTopCoins($timestamp);
+
+
+    if ($topCoins)
+    {
+        /*** sell first ****/
+        $counter = 1;
+        foreach ($topCoins as $topCoin)
+        {
+            if (
+                    (array_key_exists($topCoin['id'], $portfolio) && $counter > $portfolioMaxLength) /* we have the coin and out op top x today */
+                    ||
+                    ($topCoin['percent_change_24h'] < 0) /* coin is doing bad */
+               )
+            {
+                sellCoin($topCoin['id']);
+            }
+            $counter++;
+        }
+        /*** then buy ****/
+
+        $i = count($portfolio);
+        $ready = false;
+        while ($i < $portfolioMaxLength && !$ready)
+        {
+
+            $ready = true;
+            foreach ($topCoins as $topCoin)
+            {
+                if ($i < $portfolioMaxLength  && !array_key_exists($topCoin['id'],$portfolio))
+                {
+                    buyCoin($topCoin['id'],$topCoin);
+                    $ready = false;
+                }
+                $i = count($portfolio);
+            }
+
+        }
+    }
+}
+
+
+
 
