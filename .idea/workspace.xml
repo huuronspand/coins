@@ -37,8 +37,8 @@
       <file leaf-file-name="coinvalue.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cronjobs/coinvalue.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="18">
-              <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+            <state relative-caret-position="36">
+              <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="36" />
               <folding>
                 <marker date="1518894669734" expanded="true" signature="1627:1661" placeholder="Insert into coinstats... " />
               </folding>
@@ -49,13 +49,13 @@
       <file leaf-file-name="simulate.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/simulate.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="18">
-              <caret line="1" column="33" selection-start-line="1" selection-start-column="33" selection-end-line="1" selection-end-column="33" />
+            <state relative-caret-position="90">
+              <caret line="5" column="40" selection-start-line="5" selection-start-column="40" selection-end-line="5" selection-end-column="40" />
               <folding>
-                <marker date="1518975184914" expanded="true" signature="1611:1724" placeholder="SELECT * FRO... coinstats" />
-                <marker date="1518975184914" expanded="true" signature="1611:1775" placeholder="SELECT * FRO... coinstats" />
-                <marker date="1518975184914" expanded="true" signature="1611:1844" placeholder="SELECT * FRO... coinstats" />
-                <marker date="1518975184914" expanded="true" signature="1611:2011" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518975361461" expanded="true" signature="1718:1831" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518975361461" expanded="true" signature="1718:1882" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518975361461" expanded="true" signature="1718:1951" placeholder="SELECT * FRO... coinstats" />
+                <marker date="1518975361461" expanded="true" signature="1718:2118" placeholder="SELECT * FRO... coinstats" />
               </folding>
             </state>
           </provider>
@@ -247,12 +247,12 @@
       <workItem from="1518788423588" duration="2355000" />
       <workItem from="1518806087564" duration="1028000" />
       <workItem from="1518947086741" duration="119000" />
-      <workItem from="1518948548467" duration="8263000" />
+      <workItem from="1518948548467" duration="8452000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="16798000" />
+    <option name="totallyTimeSpent" value="16987000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="61" y="40" width="1680" height="955" extended-state="0" />
@@ -399,8 +399,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/cronjobs/coinvalue.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+        <state relative-caret-position="36">
+          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="36" />
           <folding>
             <marker date="1518894669734" expanded="true" signature="1627:1661" placeholder="Insert into coinstats... " />
           </folding>
@@ -409,13 +409,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/simulate.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="1" column="33" selection-start-line="1" selection-start-column="33" selection-end-line="1" selection-end-column="33" />
+        <state relative-caret-position="90">
+          <caret line="5" column="40" selection-start-line="5" selection-start-column="40" selection-end-line="5" selection-end-column="40" />
           <folding>
-            <marker date="1518975184914" expanded="true" signature="1611:1724" placeholder="SELECT * FRO... coinstats" />
-            <marker date="1518975184914" expanded="true" signature="1611:1775" placeholder="SELECT * FRO... coinstats" />
-            <marker date="1518975184914" expanded="true" signature="1611:1844" placeholder="SELECT * FRO... coinstats" />
-            <marker date="1518975184914" expanded="true" signature="1611:2011" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518975361461" expanded="true" signature="1718:1831" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518975361461" expanded="true" signature="1718:1882" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518975361461" expanded="true" signature="1718:1951" placeholder="SELECT * FRO... coinstats" />
+            <marker date="1518975361461" expanded="true" signature="1718:2118" placeholder="SELECT * FRO... coinstats" />
           </folding>
         </state>
       </provider>

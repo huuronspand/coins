@@ -1,11 +1,18 @@
 <?php
-echo $_SERVER['SERVER_NAME'];die;
-$_GLOBALS['dbLocation'] =  '35.205.178.111';
-$_GLOBALS['db'] = 'coinstats';
-$_GLOBALS['dbUser'] = 'coins';
-//$_GLOBALS['dbPass'] = 'N-Ho9CDhRGMUS4345';
-$_GLOBALS['dbPass'] = 'qewdqwfe44fwwe4ffw4efw4';
+$server = $_SERVER['SERVER_NAME'];
 
+if ($server == '35.205.178.111')
+{
+    require "/var/www/coins/config.php";
+}
+else
+{
+    $_GLOBALS['dbLocation'] = '35.205.178.111';
+    $_GLOBALS['db'] = 'coinstats';
+    $_GLOBALS['dbUser'] = 'coins';
+    //$_GLOBALS['dbPass'] = 'N-Ho9CDhRGMUS4345';
+    $_GLOBALS['dbPass'] = 'qewdqwfe44fwwe4ffw4efw4';
+}
 error_reporting(E_ALL);
 try {
     $db = new PDO('mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4', $_GLOBALS['dbUser'], $_GLOBALS['dbPass']);
