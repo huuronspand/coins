@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ccd4cd33-26ad-45ae-9f61-c039e3144087" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/simulate.php" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/examples/test.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/test/newtest.php" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/test/test.php" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/deployment.xml" afterPath="$PROJECT_DIR$/.idea/deployment.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/simulate.php" afterPath="$PROJECT_DIR$/simulate.php" />
     </list>
     <ignored path="coins.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -54,8 +49,8 @@
       <file leaf-file-name="simulate.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/simulate.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="5" column="17" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
+            <state relative-caret-position="418">
+              <caret line="45" column="21" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
               <folding />
             </state>
           </provider>
@@ -227,12 +222,12 @@
       <workItem from="1518788423588" duration="2355000" />
       <workItem from="1518806087564" duration="1028000" />
       <workItem from="1518947086741" duration="119000" />
-      <workItem from="1518948548467" duration="712000" />
+      <workItem from="1518948548467" duration="1727000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9247000" />
+    <option name="totallyTimeSpent" value="10262000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="49" y="26" width="1680" height="955" extended-state="0" />
@@ -373,8 +368,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/simulate.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="17" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
+        <state relative-caret-position="418">
+          <caret line="45" column="21" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
           <folding />
         </state>
       </provider>
