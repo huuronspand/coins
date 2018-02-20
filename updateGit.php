@@ -64,6 +64,7 @@ if($signature == $compare) {
     // only pull if we are on the same branch
     if ($branch == git_current_branch($cwd)) {
 
+        
         // pull from $branch
         $cmd = sprintf('git pull origin %s', $branch);
         $result = syscall($cmd, $cwd);
