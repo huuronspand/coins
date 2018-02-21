@@ -21,10 +21,11 @@ try {
     echo 'Not possible to connect to mysql: ',  $e->getMessage(), "\n";
 }
 
-$savings = 50000;
+$initialSavings = 10000;
+$currentSavings = $initialSavings;
 $savingsInCoins = 0;
-$defaultBuyAmount = 5000;
-$portfolioMaxLength = $savings / $defaultBuyAmount;
+$defaultBuyAmount = 1000;
+$portfolioMaxLength = $currentSavings / $defaultBuyAmount;
 $topCoins = array();
 $portfolio = array();
 $simStartTimestamp = 1518876000;
@@ -53,38 +54,55 @@ function getClause($portfolio)
    return $clause;
 }
 
+function portFolioValue()
+{
+     $total =  0;
+     global $portfolio;
+     foreach($portfolio as $p)
+     {
+         $total = $total + $p['amount'];
+     }
+    return $total;
+}
+
 function buyCoin($coinCode,$coinInfo)
 {
-    global $portfolio,$savings,$savingsInCoins,$defaultBuyAmount;
+    global $portfolio,$currentSavings,$defaultBuyAmount;
     $portfolio[$coinCode] = $coinInfo;
-    echo "buy " . $coinCode . "<br/>";
-    $savings = $savings - $defaultBuyAmount;
+    echo "buy " . $coinCode . "(" .  $defaultBuyAmount.") <br/>";
+    $currentSavings = $currentSavings - $defaultBuyAmount;
+    $portfolio[$coinCode]["amount"] = $defaultBuyAmount;
     return $portfolio;
 }
 function sellCoin($coinCode,$coinInfo)
 {
-    global $portfolio,$savings,$defaultBuyAmount;
-    /* out of top 10, more than 100 rise ......? */
+    global $portfolio,$currentSavings,$defaultBuyAmount;
     unset($portfolio[$coinCode]);
     echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
-    $savings = $savings + (1 + ($coinInfo["percent_change_24h"]/100)) * $defaultBuyAmount;
+    $currentSavings = $currentSavings + (1 + ($coinInfo["percent_change_24h"]/100)) * $defaultBuyAmount;
     return $portfolio;
 }
 
-function shouldSell($topCoin, $counter)
+
+
+function shouldSell($topCoin, $topPosition)
 {
     global $portfolio, $portfolioMaxLength;
     $result = false;
-    echo $counter;
     if  (
         /* we have a in portfolio coin which is out op top x today */
-        (array_key_exists($topCoin['id'], $portfolio) && $counter > $portfolioMaxLength)
-        ||
-        /* coin is doing bad */
-        ($topCoin['percent_change_24h'] < 0)
+            array_key_exists($topCoin['id'], $portfolio)
+            &&
+            (
+                /* coin fell out of top */
+                ($topPosition > $portfolioMaxLength)
+                ||
+                /* coin is doing bad */
+                ($topCoin['percent_change_24h'] < 5)
+            )
         )
     {
-        echo("should sell: in portfolio:". array_key_exists($topCoin['id'],$portfolio). " , position:". $counter . " perc change:" . $topCoin['percent_change_24h'] . "<br/>");
+        //cho("should sell: in portfolio:". array_key_exists($topCoin['id'],$portfolio). " , position:". $counter . " perc change:" . $topCoin['percent_change_24h'] . "<br/>");
         $result = true;
     }
 
@@ -101,7 +119,7 @@ function getTopCoins($timestamp)
                 FROM 
                 (
                 SELECT * FROM coinstats.coinstats
-                WHERE 24h_volume_usd > 10000000 
+                WHERE 24h_volume_usd > 1000000 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
                 order by timestamp desc, percent_change_24h desc
@@ -142,8 +160,8 @@ function getTopCoins($timestamp)
 for ($t = 0;  $t < $simDays; $t++)
 {
 
-    echo "<hr/>Day " . $t . "<br/>";
 
+    echo "<hr/>Day " . $t . "<br/>";
 
     $timestamp = $simStartTimestamp + $t * $oneDay;
     $topCoins = getTopCoins($timestamp);
@@ -165,23 +183,34 @@ for ($t = 0;  $t < $simDays; $t++)
 
         $i = count($portfolio);
         $ready = false;
-        while ($i < $portfolioMaxLength && !$ready)
+        while ($i <= $portfolioMaxLength && !$ready)
         {
-
             $ready = true;
             foreach ($topCoins as $topCoin)
             {
                 if ($i < $portfolioMaxLength  && !array_key_exists($topCoin['id'],$portfolio))
                 {
-                    buyCoin($topCoin['id'],$topCoin);
-                    $ready = false;
+                    if ($currentSavings  >= $defaultBuyAmount)
+                    {
+                        buyCoin($topCoin['id'],$topCoin);
+                        $ready = false;
+                    }
+
                 }
                 $i = count($portfolio);
             }
         }
     }
-    echo "<hr/>saving:" . $savings . ", in portfolio:" . count($portfolio) * $defaultBuyAmount;
-    echo getClause($portfolio);
+    $portfolioVal = round(portFolioValue());
+    echo "<hr/><div style='background-color:lightblue'>tot value : " . round($currentSavings + $portfolioVal) . " (in savings:" . round($currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
+    if ($currentSavings > 0)
+    {
+
+        echo "<hr/>new buyAmount from " .round($defaultBuyAmount) . " to ";
+        $defaultBuyAmount = $defaultBuyAmount + $currentSavings /$portfolioMaxLength;
+        echo round($defaultBuyAmount) . "<br/><hr/>";
+    }
+
 }
 
 
