@@ -1,13 +1,13 @@
 <?php
 $server = $_SERVER['SERVER_NAME'];
 
-if ($server == '35.205.178.111')
+if ($server == '35.190.192.81')
 {
     require "/var/www/coins/config.php";
 }
 else
 {
-    $_GLOBALS['dbLocation'] = '35.195.149.249';
+    $_GLOBALS['dbLocation'] = '35.190.192.81';
     $_GLOBALS['db'] = 'coinstats';
     $_GLOBALS['dbUser'] = 'coins';
     //$_GLOBALS['dbPass'] = 'N-Ho9CDhRGMUS4345';
