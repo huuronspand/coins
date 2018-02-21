@@ -54,6 +54,19 @@ function getClause($portfolio)
    return $clause;
 }
 
+function displayFolio()
+{
+    $total =  0;
+    global $portfolio;
+    echo "<table border='1'>";
+    echo "<tr><td colspan='2'>Portpolio</td>";
+    foreach($portfolio as $p)
+    {
+        echo "<tr><td>". $p['id'] . "</td><td>" .  round($p['amount']) . "</td></tr>" ;
+    }
+    echo "</table>";
+}
+
 function portFolioValue()
 {
      $total =  0;
@@ -65,20 +78,20 @@ function portFolioValue()
     return $total;
 }
 
-function buyCoin($coinCode,$coinInfo)
+function buyCoin($coinCode,$coinInfo, $show)
 {
     global $portfolio,$currentSavings,$defaultBuyAmount;
     $portfolio[$coinCode] = $coinInfo;
-    echo "buy " . $coinCode . "(" .  $defaultBuyAmount.") <br/>";
+    if ($show) echo "buy " . $coinCode . "(" .  $defaultBuyAmount.") <br/>";
     $currentSavings = $currentSavings - $defaultBuyAmount;
     $portfolio[$coinCode]["amount"] = $defaultBuyAmount;
     return $portfolio;
 }
-function sellCoin($coinCode,$coinInfo)
+function sellCoin($coinCode,$coinInfo, $show)
 {
     global $portfolio,$currentSavings,$defaultBuyAmount;
     unset($portfolio[$coinCode]);
-    echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
+    if ($show) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
     $currentSavings = $currentSavings + (1 + ($coinInfo["percent_change_24h"]/100)) * $defaultBuyAmount;
     return $portfolio;
 }
@@ -98,7 +111,7 @@ function shouldSell($topCoin, $topPosition)
                 ($topPosition > $portfolioMaxLength)
                 ||
                 /* coin is doing bad */
-                ($topCoin['percent_change_24h'] < 5)
+                ($topCoin['percent_change_24h'] < 0)
             )
         )
     {
@@ -175,13 +188,35 @@ for ($t = 0;  $t < $simDays; $t++)
         {
             if (shouldSell($topCoin, $positionInTopCoins) )
             {
-                sellCoin($topCoin['id'],$portfolio[$topCoin['id']] );
+                sellCoin($topCoin['id'],$portfolio[$topCoin['id']] , false);
             }
             $positionInTopCoins++;
         }
         /*** then buy ****/
 
         $i = count($portfolio);
+        $ready = false;
+        $nrToBuy = 0;
+        while ($i <= $portfolioMaxLength && !$ready)
+        {
+            $ready = true;
+            foreach ($topCoins as $topCoin)
+            {
+                if ($i < $portfolioMaxLength  && !array_key_exists($topCoin['id'],$portfolio))
+                {
+                    if ($currentSavings  >= $defaultBuyAmount)
+                    {
+                        $nrToBuy++;
+                        $ready = false;
+                        $i++;
+                    }
+                }
+
+            }
+        }
+        if ($nrToBuy > 0) $defaultBuyAmount = $currentSavings / $nrToBuy;
+        $i = count($portfolio);
+
         $ready = false;
         while ($i <= $portfolioMaxLength && !$ready)
         {
@@ -192,7 +227,7 @@ for ($t = 0;  $t < $simDays; $t++)
                 {
                     if ($currentSavings  >= $defaultBuyAmount)
                     {
-                        buyCoin($topCoin['id'],$topCoin);
+                        buyCoin($topCoin['id'],$topCoin, false);
                         $ready = false;
                     }
 
@@ -202,14 +237,11 @@ for ($t = 0;  $t < $simDays; $t++)
         }
     }
     $portfolioVal = round(portFolioValue());
-    echo "<hr/><div style='background-color:lightblue'>tot value : " . round($currentSavings + $portfolioVal) . " (in savings:" . round($currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
-    if ($currentSavings > 0)
-    {
-
-        echo "<hr/>new buyAmount from " .round($defaultBuyAmount) . " to ";
-        $defaultBuyAmount = $defaultBuyAmount + $currentSavings /$portfolioMaxLength;
-        echo round($defaultBuyAmount) . "<br/><hr/>";
-    }
+    displayFolio();
+    echo "<hr/><div style='background-color:lightblue'>tot value : " . round($currentSavings + $portfolioVal)."( total growth:" .  (-100+round(100*($currentSavings + $portfolioVal) / $initialSavings) ). "% ) " . " (in savings:" . round($currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
+    echo "<hr/>buy Amount from " .round($defaultBuyAmount) . " to ";
+    $defaultBuyAmount = $defaultBuyAmount + $currentSavings /$portfolioMaxLength;
+    echo round($defaultBuyAmount) . "<br/><hr/>";
 
 }
 
