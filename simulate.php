@@ -7,7 +7,7 @@ if ($server == '35.205.178.111')
 }
 else
 {
-    $_GLOBALS['dbLocation'] = '35.205.178.111';
+    $_GLOBALS['dbLocation'] = '35.195.149.249';
     $_GLOBALS['db'] = 'coinstats';
     $_GLOBALS['dbUser'] = 'coins';
     //$_GLOBALS['dbPass'] = 'N-Ho9CDhRGMUS4345';
@@ -31,6 +31,28 @@ $simStartTimestamp = 1518876000;
 $simDays = 10;
 $oneDay = 24*60*60;
 
+function getClause($portfolio)
+{
+    $clause = "";
+    $i = count($portfolio);
+    if ($i >0)
+    {
+        $clause = $clause . " coinstats.id IN (";
+        $ready = false;
+        foreach($portfolio as $p)
+        {
+            $clause = $clause ."'" . $p['id'] . "',";
+        }
+
+        $clause = $clause . "'')";
+    }
+    else
+    {
+        $clause = " 1 = 2";
+    }
+   return $clause;
+}
+
 function buyCoin($coinCode,$coinInfo)
 {
     global $portfolio,$savings,$savingsInCoins,$defaultBuyAmount;
@@ -53,6 +75,7 @@ function shouldSell($topCoin, $counter)
 {
     global $portfolio, $portfolioMaxLength;
     $result = false;
+    echo $counter;
     if  (
         /* we have a in portfolio coin which is out op top x today */
         (array_key_exists($topCoin['id'], $portfolio) && $counter > $portfolioMaxLength)
@@ -61,6 +84,7 @@ function shouldSell($topCoin, $counter)
         ($topCoin['percent_change_24h'] < 0)
         )
     {
+        echo("should sell: in portfolio:". array_key_exists($topCoin['id'],$portfolio). " , position:". $counter . " perc change:" . $topCoin['percent_change_24h'] . "<br/>");
         $result = true;
     }
 
@@ -69,14 +93,34 @@ function shouldSell($topCoin, $counter)
 
 function getTopCoins($timestamp)
 {
-    global $db, $oneDay;
-    $sql = "SELECT * FROM coinstats.coinstats
-            WHERE market_cap_usd > 100000000
-            and timestamp between unix_timestamp(Date(from_unixtime(".$timestamp."))) 
-                            and  unix_timestamp(Date(from_unixtime(".($timestamp + $oneDay).")))
-                            and  percent_change_24h > 0
-            order by timestamp desc, percent_change_24h desc
-            limit 20";
+    global $db, $oneDay,$portfolio ;
+    $sql = "select *
+            FROM
+            (
+                select *
+                FROM 
+                (
+                SELECT * FROM coinstats.coinstats
+                WHERE market_cap_usd > 100000000
+                and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
+                                and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
+                order by timestamp desc, percent_change_24h desc
+                limit 10
+                ) tmp1
+                UNION
+                select *
+                from
+                (
+                SELECT * FROM coinstats.coinstats
+                where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
+                                and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
+                and " . getClause($portfolio) . "
+                order by timestamp desc, percent_change_24h desc
+                limit 10
+                ) tmp2
+            ) tmp3
+            order by timestamp desc, percent_change_24h desc";
+
     $result = $db->query($sql);
     $topCoins = array();
     if($result !== false) {
@@ -137,6 +181,7 @@ for ($t = 0;  $t < $simDays; $t++)
         }
     }
     echo "<hr/>saving:" . $savings . ", in portfolio:" . count($portfolio) * $defaultBuyAmount;
+    echo getClause($portfolio);
 }
 
 
