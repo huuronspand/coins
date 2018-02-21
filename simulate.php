@@ -101,7 +101,7 @@ function getTopCoins($timestamp)
                 FROM 
                 (
                 SELECT * FROM coinstats.coinstats
-                WHERE market_cap_usd > 100000000
+                WHERE 24h_volume_usd > 10000000 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
                 order by timestamp desc, percent_change_24h desc
