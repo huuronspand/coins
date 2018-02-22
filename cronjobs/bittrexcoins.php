@@ -25,13 +25,12 @@ try {
     foreach ($coindata->result as $coin)
     {
 
-        echo $coin[name]."-".$coin->name;
         $statement = $db->prepare("INSERT IGNORE INTO coins(name,symbol,bittrex)
             VALUES(?,?,?)");
 
         try {
             echo "-";
-            $statement->execute(array($coin[name],$coin[symbol],1));
+            $statement->execute(array($coin->name,$coin->symbol,1));
         } catch (Exception $e) {
             echo 'Insert into coins not working: ',  $e->getMessage(), "\n";
         }
