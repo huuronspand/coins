@@ -20,7 +20,7 @@ $portfolio = array();
 $simStartTimestamp = 1518876000;
 $simDays = 10;
 $oneDay = 24*60*60;
-$debug = false;
+$debug = true;
 
 function getClause($portfolio)
 {
