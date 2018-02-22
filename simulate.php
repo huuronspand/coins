@@ -10,233 +10,280 @@ try {
     echo 'Not possible to connect to mysql: ',  $e->getMessage(), "\n";
 }
 
-$initialSavings = 10000;
-$currentSavings = $initialSavings;
-$savingsInCoins = 0;
-$defaultBuyAmount = 1000;
-$portfolioMaxLength = $currentSavings / $defaultBuyAmount;
-$topCoins = array();
-$portfolio = array();
-$simStartTimestamp = 1518876000;
-$simDays = 10;
-$oneDay = 24*60*60;
-$debug = true;
 
-function getClause($portfolio)
+class simulation
 {
-    $clause = "";
-    $i = count($portfolio);
-    if ($i >0)
+
+    var $initialSavings;
+    var $currentSavings;
+    var $savingsInCoins;
+    var $defaultBuyAmount;
+    var $portfolioMaxLength;
+    var $topCoins;
+    var $portfolio;
+    var $simStartTimestamp;
+    var $simDays;
+    var $oneDay;
+    var $outputLevel;
+    var $test = 1;
+    public function __construct($initialSavings = 10000,
+                         $savingsInCoins      = 0,
+                         $defaultBuyAmount = 1000,
+                         $simStartTimestamp = 1518876000,
+                         $simDays= 10,
+                         $outputLevel = true)
     {
-        $clause = $clause . " coinstats.id IN (";
-        $ready = false;
-        foreach($portfolio as $p)
+        $this->oneDay  = 24 * 60 * 60;
+        $this->reInit(    $initialSavings ,
+                        $savingsInCoins     ,
+                        $defaultBuyAmount,
+                        $simStartTimestamp,
+                        $simDays,
+                        $outputLevel);
+    }
+
+    public function reInit( $initialSavings = 10000,
+                    $savingsInCoins      = 0,
+                    $defaultBuyAmount = 1000,
+                    $simStartTimestamp = 1518876000,
+                    $simDays= 10,
+                    $outputLevel = true)
+    {
+        $this->initialSavings      = $initialSavings;
+        $this->currentSavings      = $this->initialSavings;
+        $this->savingsInCoins      = $savingsInCoins;
+        $this->defaultBuyAmount    = $defaultBuyAmount;
+        $this->portfolioMaxLength = $this->currentSavings / $this->defaultBuyAmount;
+        $this->topCoins = array();
+        $this->portfolio = array();
+        $this->simStartTimestamp = $simStartTimestamp;
+        $this->simDays = $simDays;
+        $this->outputLevel = $outputLevel;
+    }
+    private function getClause()
+    {
+        $clause = "";
+        $i = count($this->portfolio);
+        if ($i >0)
         {
-            $clause = $clause ."'" . $p['id'] . "',";
+            $clause = $clause . " coinstats.id IN (";
+            foreach($this->portfolio as $p)
+            {
+                $clause = $clause ."'" . $p['id'] . "',";
+            }
+
+            $clause = $clause . "'')";
         }
-
-        $clause = $clause . "'')";
+        else
+        {
+            $clause = " 1 = 2";
+        }
+        return $clause;
     }
-    else
+
+    private function displayFolio()
     {
-        $clause = " 1 = 2";
-    }
-   return $clause;
-}
+        $total =  0;
 
-function displayFolio()
-{
-    $total =  0;
-    global $portfolio;
-    echo "<table border='1'>";
-    echo "<tr><td colspan='2'>Portpolio</td>";
-    foreach($portfolio as $p)
+        echo "<table border='1'>";
+        echo "<tr><td colspan='2'>Portpolio</td>";
+        foreach($this->portfolio as $p)
+        {
+            echo "<tr><td>". $p['id'] . "</td><td>" .  round($p['amount']) . "</td></tr>" ;
+        }
+        echo "</table>";
+    }
+
+    private function portFolioValue()
     {
-        echo "<tr><td>". $p['id'] . "</td><td>" .  round($p['amount']) . "</td></tr>" ;
+        $total =  0;
+        foreach($this->portfolio as $p)
+        {
+            $total = $total + $p['amount'];
+        }
+        return $total;
     }
-    echo "</table>";
-}
 
-function portFolioValue()
-{
-     $total =  0;
-     global $portfolio;
-     foreach($portfolio as $p)
-     {
-         $total = $total + $p['amount'];
-     }
-    return $total;
-}
-
-function buyCoin($coinCode,$coinInfo, $debug)
-{
-    global $portfolio,$currentSavings,$defaultBuyAmount;
-    $portfolio[$coinCode] = $coinInfo;
-    if ($debug) echo "buy " . $coinCode . "(" .  $defaultBuyAmount.") <br/>";
-    $currentSavings = $currentSavings - $defaultBuyAmount;
-    $portfolio[$coinCode]["amount"] = $defaultBuyAmount;
-    return $portfolio;
-}
-function sellCoin($coinCode,$coinInfo, $debug)
-{
-    global $portfolio,$currentSavings,$defaultBuyAmount;
-    unset($portfolio[$coinCode]);
-    if ($debug) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
-    $currentSavings = $currentSavings + (1 + ($coinInfo["percent_change_24h"]/100)) * $defaultBuyAmount;
-    return $portfolio;
-}
+    private function buyCoin($coinCode,$coinInfo, $outputLevel)
+    {
+        $this->portfolio[$coinCode] = $coinInfo;
+        if ($outputLevel) echo "buy " . $coinCode . "(" .  $this->defaultBuyAmount.") <br/>";
+        $this->currentSavings = $this->currentSavings - $this->defaultBuyAmount;
+        $this->portfolio[$coinCode]["amount"] = $this->defaultBuyAmount;
+        return $this->portfolio;
+    }
+    private function sellCoin($coinCode,$coinInfo, $outputLevel)
+    {
+        unset($this->portfolio[$coinCode]);
+        if ($outputLevel) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $this->defaultBuyAmount ."<br/>";
+        $this->currentSavings = $this->currentSavings + (1 + ($coinInfo["percent_change_24h"]/100)) * $this->defaultBuyAmount;
+        return $this->portfolio;
+    }
 
 
 
-function shouldSell($topCoin, $topPosition)
-{
-    global $portfolio, $portfolioMaxLength;
-    $result = false;
-    if  (
-        /* we have a in portfolio coin which is out op top x today */
-            array_key_exists($topCoin['id'], $portfolio)
+    private function shouldSell($topCoin, $topPosition)
+    {
+        $result = false;
+        if  (
+            /* we have a in portfolio coin which is out op top x today */
+            array_key_exists($topCoin['id'], $this->portfolio)
             &&
             (
                 /* coin fell out of top */
-                ($topPosition > $portfolioMaxLength)
+                ($topPosition > $this->portfolioMaxLength)
                 ||
                 /* coin is doing bad */
                 ($topCoin['percent_change_24h'] < 0)
             )
         )
-    {
-        //cho("should sell: in portfolio:". array_key_exists($topCoin['id'],$portfolio). " , position:". $counter . " perc change:" . $topCoin['percent_change_24h'] . "<br/>");
-        $result = true;
+        {
+            //echo("should sell: in portfolio:". array_key_exists($topCoin['id'],$portfolio). " , position:". $counter . " perc change:" . $topCoin['percent_change_24h'] . "<br/>");
+            $result = true;
+        }
+
+        return $result;
     }
 
-  return $result;
-}
-
-function getTopCoins($timestamp)
-{
-    global $db, $oneDay,$portfolio ;
-    $sql = "select *
+    private function getTopCoins($timestamp)
+    {
+        global $db;
+        $sql = "select *
             FROM
             (
                 select *
                 FROM 
                 (
-                SELECT coinstats.coinstats.* FROM coinstats.coinstats,coinstats.coins
+                SELECT * FROM coinstats.coinstats
                 WHERE 24h_volume_usd > 1000000 
+                 		AND coinName = name
+                AND (bittrex = 1 OR kraken = 1)   
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
-                                and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
-                AND coinName = name
-                AND (bittrex = 1 OR kraken = 1)
+                                and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 order by timestamp desc, percent_change_24h desc
-                limit 10
+                limit ". round($this->portfolioMaxLength) ."
                 ) tmp1
                 UNION
                 select *
                 from
                 (
-                SELECT coinstats.coinstats.* FROM coinstats.coinstats, coinstats.coins
+                SELECT * FROM coinstats.coinstats
                 where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
-                                and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
-                and " . getClause($portfolio) . "
-                AND coinName = name
-                AND (bittrex = 1 OR kraken = 1)
+                                and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
+                and " . $this->getClause($this->portfolio) . "
+                 		AND coinName = name
+                AND (bittrex = 1 OR kraken = 1)   
                 order by timestamp desc, percent_change_24h desc
-                limit 10
+                limit ". round($this->portfolioMaxLength) ."
                 ) tmp2
             ) tmp3
             order by timestamp desc, percent_change_24h desc";
 
-    $result = $db->query($sql);
-    $topCoins = array();
-    if($result !== false) {
-        foreach($result as $row)
-        {
-            $topCoins[$row['id']] = $row;
+        $result = $db->query($sql);
+        $topCoins = array();
+        if($result !== false) {
+            foreach($result as $row)
+            {
+                $this->topCoins[$row['id']] = $row;
+            }
         }
+
+        return $this->topCoins;
     }
 
-    return $topCoins;
-}
-
-
-
-
-
-
-
-for ($t = 0;  $t < $simDays; $t++)
-{
-
-
-    echo "<hr/>Day " . $t . "<br/>";
-
-    $timestamp = $simStartTimestamp + $t * $oneDay;
-    $topCoins = getTopCoins($timestamp);
-
-
-    if ($topCoins)
+    public function run()
     {
-        /*** sell first ****/
-        $positionInTopCoins = 1;
-        foreach ($topCoins as $topCoin)
+        for ($t = 1;  $t <= $this->simDays; $t++)
         {
-            if (shouldSell($topCoin, $positionInTopCoins) )
-            {
-                sellCoin($topCoin['id'],$portfolio[$topCoin['id']] ,$debug);
-            }
-            $positionInTopCoins++;
-        }
-        /*** then buy ****/
 
-        $i = count($portfolio);
-        $ready = false;
-        $nrToBuy = 0;
-        while ($i <= $portfolioMaxLength && !$ready)
-        {
-            $ready = true;
-            foreach ($topCoins as $topCoin)
+
+            if ($this->outputLevel > 0) echo "<hr/>Day " . $t . "<br/>";
+
+            $timestamp = $this->simStartTimestamp + $t * $this->oneDay;
+            $topCoins = $this->getTopCoins($timestamp);
+
+            if ($topCoins)
             {
-                if ($i < $portfolioMaxLength  && !array_key_exists($topCoin['id'],$portfolio))
+                /*** sell first ****/
+                $positionInTopCoins = 1;
+                foreach ($topCoins as $topCoin)
                 {
-                    if ($currentSavings  >= $defaultBuyAmount)
+                    if ($this->shouldSell($topCoin, $positionInTopCoins) )
                     {
-                        $nrToBuy++;
-                        $ready = false;
-                        $i++;
+                        $this->sellCoin($topCoin['id'],$this->portfolio[$topCoin['id']] ,$this->outputLevel);
+                    }
+                    $positionInTopCoins++;
+                }
+                /*** then buy ****/
+
+                $i = count($this->portfolio);
+                $ready = false;
+                $nrToBuy = 0;
+                while ($i <= $this->portfolioMaxLength && !$ready)
+                {
+                    $ready = true;
+                    foreach ($topCoins as $topCoin)
+                    {
+                        if ($i < $this->portfolioMaxLength  && !array_key_exists($topCoin['id'],$this->portfolio))
+                        {
+                            if ($this->currentSavings  >= $this->defaultBuyAmount)
+                            {
+                                $nrToBuy++;
+                                $ready = false;
+                                $i++;
+                            }
+                        }
+
                     }
                 }
+                if ($nrToBuy > 0) $defaultBuyAmount = $this->currentSavings / $nrToBuy;
+                $i = count($this->portfolio);
 
-            }
-        }
-        if ($nrToBuy > 0) $defaultBuyAmount = $currentSavings / $nrToBuy;
-        $i = count($portfolio);
-
-        $ready = false;
-        while ($i <= $portfolioMaxLength && !$ready)
-        {
-            $ready = true;
-            foreach ($topCoins as $topCoin)
-            {
-                if ($i < $portfolioMaxLength  && !array_key_exists($topCoin['id'],$portfolio))
+                $ready = false;
+                while ($i <= $this->portfolioMaxLength && !$ready)
                 {
-                    if ($currentSavings  >= $defaultBuyAmount)
+                    $ready = true;
+                    foreach ($topCoins as $topCoin)
                     {
-                        buyCoin($topCoin['id'],$topCoin, $debug);
-                        $ready = false;
-                    }
+                        if ($i < $this->portfolioMaxLength  && !array_key_exists($topCoin['id'],$this->portfolio))
+                        {
+                            if ($this->currentSavings  >= $this->defaultBuyAmount)
+                            {
+                                $this->buyCoin($topCoin['id'],$topCoin, $this->outputLevel);
+                                $ready = false;
+                            }
 
+                        }
+                        $i = count($this->portfolio);
+                    }
                 }
-                $i = count($portfolio);
             }
+            $portfolioVal = round($this->portFolioValue());
+            if ($this->outputLevel > 1) $this->displayFolio();
+            if ($this->outputLevel > 0) echo "<hr/><div style='background-color:lightblue'>tot value : " . round($this->currentSavings + $portfolioVal)."( total growth:" .  (-100+round(100*($this->currentSavings + $portfolioVal) / $this->initialSavings) ). "% ) " . " (in savings:" . round($this->currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
+            $defaultBuyAmountNew = $this->defaultBuyAmount + $this->currentSavings /$this->portfolioMaxLength;
+            if ($this->outputLevel > 0) echo "<hr/>buy Amount from " .round($this->defaultBuyAmount) . " to ".round($defaultBuyAmountNew) . "<br/><hr/>";
+            $this->defaultBuyAmount = $defaultBuyAmountNew;
         }
     }
-    $portfolioVal = round(portFolioValue());
-    if ($debug) displayFolio();
-    echo "<hr/><div style='background-color:lightblue'>tot value : " . round($currentSavings + $portfolioVal)."( total growth:" .  (-100+round(100*($currentSavings + $portfolioVal) / $initialSavings) ). "% ) " . " (in savings:" . round($currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
-    $defaultBuyAmountNew = $defaultBuyAmount + $currentSavings /$portfolioMaxLength;
-    if ($debug) echo "<hr/>buy Amount from " .round($defaultBuyAmount) . " to ".round($defaultBuyAmountNew) . "<br/><hr/>";
-    $defaultBuyAmount = $defaultBuyAmountNew;
+    public function showResults()
+    {
+        echo "start:" . $this->initialSavings . ", end " . round($this->currentSavings + $this->portFolioValue()) . "<br/>";
+    }
 }
+
+$outputLevel = 0;
+$startTimestamp = 1518876000;
+$nrOfDays = 10;
+$startSaving = 0;
+
+$sim = new simulation(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel);
+$sim->run();
+$sim->showResults();
+
+$sim->reInit(10000, $startSaving, 500, $startTimestamp, $nrOfDays, $outputLevel);
+$sim->run();
+$sim->showResults();
 
 
 
