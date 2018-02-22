@@ -126,6 +126,7 @@ function getTopCoins($timestamp)
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
                 AND coinName = name
+                AND (bittrex = 1 OR kraken = 1)
                 order by timestamp desc, percent_change_24h desc
                 limit 10
                 ) tmp1
@@ -138,6 +139,7 @@ function getTopCoins($timestamp)
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
                 and " . getClause($portfolio) . "
                 AND coinName = name
+                AND (bittrex = 1 OR kraken = 1)
                 order by timestamp desc, percent_change_24h desc
                 limit 10
                 ) tmp2
