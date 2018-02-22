@@ -28,7 +28,7 @@ try {
             $coin->Status = 1;
         else
             $coin->Status = 0;
-        $statement = $db->prepare("INSERT IGNORE INTO coins_cryptopia(cryptopiaName,cryptopiaSymbol,cryptopiaStatus)
+        $statement = $db->prepare("INSERT IGNORE INTO coins_cryptopia(cryptopiaName,cryptopiaSymbol,cryptopiaActive)
             VALUES(?,?,?)");
 
         try {

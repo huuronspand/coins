@@ -29,7 +29,7 @@ try {
         else
             $coin->Status = 0;
 
-        $statement = $db->prepare("INSERT IGNORE INTO coins_bittrex(bittrexName,bittrexSymbol,bittrexStatus)
+        $statement = $db->prepare("INSERT IGNORE INTO coins_bittrex(bittrexName,bittrexSymbol,bittrexactive)
             VALUES(?,?,?)");
 
         try {
