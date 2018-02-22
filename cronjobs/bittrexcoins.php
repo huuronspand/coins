@@ -24,7 +24,8 @@ echo "Start checking bittrex coins";
 
 foreach ($coindata->result as $coin)
 {
-    echo "-";
+
+    echo $coin[name]."-".$coin->name;
     $statement = $db->prepare("INSERT IGNORE INTO coins(name,symbol,bittrex)
         VALUES(?,?,?)");
 
