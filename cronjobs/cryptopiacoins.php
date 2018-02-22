@@ -24,14 +24,16 @@ try {
 
     foreach ($coindata->Data as $coin)
     {
-        var_dump($coin);
-        echo "<hr>";
-        $statement = $db->prepare("INSERT IGNORE INTO coins_cryptopia(cryptopiaName,cryptopiaSymbol)
-            VALUES(?,?)");
+        if($coin->ListingStatus === "Active")
+            $coin->Status = 1;
+        else
+            $coin->Status = 0;
+        $statement = $db->prepare("INSERT IGNORE INTO coins_cryptopia(cryptopiaName,cryptopiaSymbol,cryptopiaStatus)
+            VALUES(?,?,?)");
 
         try {
             echo "-";
-            $statement->execute(array($coin->Name,$coin->Symbol));
+            $statement->execute(array($coin->Name,$coin->Symbol,$coin->Status));
         } catch (Exception $e) {
             echo 'Insert into coins not working: ',  $e->getMessage(), "\n";
         }
