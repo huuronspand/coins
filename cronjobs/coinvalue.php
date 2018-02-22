@@ -1,6 +1,6 @@
 <?php
 
-require "/var/www/coins/config.php";
+require "../../config.php";
 
 $ch = curl_init();
 curl_setopt($ch,    CURLOPT_HEADER, 0);

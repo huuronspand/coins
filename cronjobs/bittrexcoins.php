@@ -1,6 +1,6 @@
 <?php
 $server = $_SERVER['SERVER_NAME'];
-require "/var/www/coins/config.php";
+require "../../config.php";
 
 
 $ch = curl_init();
