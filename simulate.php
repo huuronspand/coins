@@ -121,7 +121,7 @@ function getTopCoins($timestamp)
                 select *
                 FROM 
                 (
-                SELECT * FROM coinstats.coinstats,coinstats.coins
+                SELECT coinstats.coinstats.* FROM coinstats.coinstats,coinstats.coins
                 WHERE 24h_volume_usd > 1000000 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
@@ -133,7 +133,7 @@ function getTopCoins($timestamp)
                 select *
                 from
                 (
-                SELECT * FROM coinstats.coinstats, coinstats.coins
+                SELECT coinstats.coinstats.* FROM coinstats.coinstats, coinstats.coins
                 where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
                 and " . getClause($portfolio) . "
