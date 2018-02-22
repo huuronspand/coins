@@ -31,6 +31,7 @@ $portfolio = array();
 $simStartTimestamp = 1518876000;
 $simDays = 10;
 $oneDay = 24*60*60;
+$debug = false;
 
 function getClause($portfolio)
 {
@@ -78,20 +79,20 @@ function portFolioValue()
     return $total;
 }
 
-function buyCoin($coinCode,$coinInfo, $show)
+function buyCoin($coinCode,$coinInfo, $debug)
 {
     global $portfolio,$currentSavings,$defaultBuyAmount;
     $portfolio[$coinCode] = $coinInfo;
-    if ($show) echo "buy " . $coinCode . "(" .  $defaultBuyAmount.") <br/>";
+    if ($debug) echo "buy " . $coinCode . "(" .  $defaultBuyAmount.") <br/>";
     $currentSavings = $currentSavings - $defaultBuyAmount;
     $portfolio[$coinCode]["amount"] = $defaultBuyAmount;
     return $portfolio;
 }
-function sellCoin($coinCode,$coinInfo, $show)
+function sellCoin($coinCode,$coinInfo, $debug)
 {
     global $portfolio,$currentSavings,$defaultBuyAmount;
     unset($portfolio[$coinCode]);
-    if ($show) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
+    if ($debug) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $defaultBuyAmount ."<br/>";
     $currentSavings = $currentSavings + (1 + ($coinInfo["percent_change_24h"]/100)) * $defaultBuyAmount;
     return $portfolio;
 }
@@ -188,7 +189,7 @@ for ($t = 0;  $t < $simDays; $t++)
         {
             if (shouldSell($topCoin, $positionInTopCoins) )
             {
-                sellCoin($topCoin['id'],$portfolio[$topCoin['id']] , false);
+                sellCoin($topCoin['id'],$portfolio[$topCoin['id']] ,$debug);
             }
             $positionInTopCoins++;
         }
@@ -227,7 +228,7 @@ for ($t = 0;  $t < $simDays; $t++)
                 {
                     if ($currentSavings  >= $defaultBuyAmount)
                     {
-                        buyCoin($topCoin['id'],$topCoin, false);
+                        buyCoin($topCoin['id'],$topCoin, $debug);
                         $ready = false;
                     }
 
@@ -237,12 +238,11 @@ for ($t = 0;  $t < $simDays; $t++)
         }
     }
     $portfolioVal = round(portFolioValue());
-    displayFolio();
+    if ($debug) displayFolio();
     echo "<hr/><div style='background-color:lightblue'>tot value : " . round($currentSavings + $portfolioVal)."( total growth:" .  (-100+round(100*($currentSavings + $portfolioVal) / $initialSavings) ). "% ) " . " (in savings:" . round($currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
-    echo "<hr/>buy Amount from " .round($defaultBuyAmount) . " to ";
-    $defaultBuyAmount = $defaultBuyAmount + $currentSavings /$portfolioMaxLength;
-    echo round($defaultBuyAmount) . "<br/><hr/>";
-
+    $defaultBuyAmountNew = $defaultBuyAmount + $currentSavings /$portfolioMaxLength;
+    if ($debug) echo "<hr/>buy Amount from " .round($defaultBuyAmount) . " to ".round($defaultBuyAmountNew) . "<br/><hr/>";
+    $defaultBuyAmount = $defaultBuyAmountNew;
 }
 
 
