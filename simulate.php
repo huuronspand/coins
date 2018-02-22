@@ -26,39 +26,45 @@ class simulation
     var $oneDay;
     var $outputLevel;
     var $test = 1;
+    var $reInvestProfit;
+
     public function __construct($initialSavings = 10000,
                          $savingsInCoins      = 0,
                          $defaultBuyAmount = 1000,
                          $simStartTimestamp = 1518876000,
                          $simDays= 10,
-                         $outputLevel = true)
+                         $outputLevel = true,
+                         $reInvestProfit = true)
     {
         $this->oneDay  = 24 * 60 * 60;
-        $this->reInit(    $initialSavings ,
+        $this->init(    $initialSavings ,
                         $savingsInCoins     ,
                         $defaultBuyAmount,
                         $simStartTimestamp,
                         $simDays,
-                        $outputLevel);
+                        $outputLevel,
+                        $reInvestProfit);
     }
 
-    public function reInit( $initialSavings = 10000,
+    public function init( $initialSavings = 10000,
                     $savingsInCoins      = 0,
                     $defaultBuyAmount = 1000,
                     $simStartTimestamp = 1518876000,
                     $simDays= 10,
-                    $outputLevel = true)
+                    $outputLevel = true,
+                    $reInvestProfit=true)
     {
         $this->initialSavings      = $initialSavings;
         $this->currentSavings      = $this->initialSavings;
         $this->savingsInCoins      = $savingsInCoins;
         $this->defaultBuyAmount    = $defaultBuyAmount;
-        $this->portfolioMaxLength = $this->currentSavings / $this->defaultBuyAmount;
+        $this->portfolioMaxLength = round($this->currentSavings / $this->defaultBuyAmount);
         $this->topCoins = array();
         $this->portfolio = array();
         $this->simStartTimestamp = $simStartTimestamp;
         $this->simDays = $simDays;
         $this->outputLevel = $outputLevel;
+        $this->reInvestProfit = $reInvestProfit;
     }
     private function getClause()
     {
@@ -154,9 +160,17 @@ class simulation
                 select *
                 FROM 
                 (
-                SELECT * FROM coinstats.coinstats, coinstats.coins_bittrex
+                SELECT coinstats.* 
+                FROM coinstats.coinstats, 
+                ( select  bittrexName nameActiveName 
+                  from    coinstats.coins_bittrex
+                  where   bittrexActive=1
+                  union 
+                  select  cryptopiaName 
+                  from    coinstats.coins_cryptopia
+                  where   cryptopiaActive=1) coins
                 WHERE 24h_volume_usd > 1000000 
-                AND name = bittrexName 
+                AND coinstats.name = coins.nameActiveName 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 order by timestamp desc, percent_change_24h desc
@@ -166,23 +180,22 @@ class simulation
                 select *
                 from
                 (
-                SELECT * FROM coinstats.coinstats, coinstats.coins_bittrex
+                SELECT * FROM coinstats.coinstats
                 where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 and " . $this->getClause($this->portfolio) . "
-                 		AND name = bittrexName
                 order by timestamp desc, percent_change_24h desc
                 limit ". round($this->portfolioMaxLength) ."
                 ) tmp2
             ) tmp3
             order by timestamp desc, percent_change_24h desc";
-
         $result = $db->query($sql);
         $topCoins = array();
         if($result !== false) {
+            $this->topCoins = array();
             foreach($result as $row)
             {
-                $this->topCoins[$row['id']] = $row;
+                array_push($this->topCoins, $row);
             }
         }
 
@@ -213,28 +226,31 @@ class simulation
                     $positionInTopCoins++;
                 }
                 /*** then buy ****/
-
-                $i = count($this->portfolio);
-                $ready = false;
-                $nrToBuy = 0;
-                while ($i <= $this->portfolioMaxLength && !$ready)
+                if ($this->reInvestProfit)
                 {
-                    $ready = true;
-                    foreach ($topCoins as $topCoin)
+                    $i = count($this->portfolio);
+                    $ready = false;
+                    $nrToBuy = 0;
+                    while ($i <= $this->portfolioMaxLength && !$ready)
                     {
-                        if ($i < $this->portfolioMaxLength  && !array_key_exists($topCoin['id'],$this->portfolio))
+                        $ready = true;
+                        foreach ($topCoins as $topCoin)
                         {
-                            if ($this->currentSavings  >= $this->defaultBuyAmount)
+                            if ($i < $this->portfolioMaxLength  && !array_key_exists($topCoin['id'],$this->portfolio))
                             {
-                                $nrToBuy++;
-                                $ready = false;
-                                $i++;
+                                if ($this->currentSavings  >= $this->defaultBuyAmount)
+                                {
+                                    $nrToBuy++;
+                                    $ready = false;
+                                    $i++;
+                                }
                             }
-                        }
 
+                        }
                     }
+                    if ($nrToBuy > 0) $this->defaultBuyAmount = $this->currentSavings / $nrToBuy;
                 }
-                if ($nrToBuy > 0) $defaultBuyAmount = $this->currentSavings / $nrToBuy;
+
                 $i = count($this->portfolio);
 
                 $ready = false;
@@ -259,14 +275,17 @@ class simulation
             $portfolioVal = round($this->portFolioValue());
             if ($this->outputLevel > 1) $this->displayFolio();
             if ($this->outputLevel > 0) echo "<hr/><div style='background-color:lightblue'>tot value : " . round($this->currentSavings + $portfolioVal)."( total growth:" .  (-100+round(100*($this->currentSavings + $portfolioVal) / $this->initialSavings) ). "% ) " . " (in savings:" . round($this->currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
-            $defaultBuyAmountNew = $this->defaultBuyAmount + $this->currentSavings /$this->portfolioMaxLength;
-            if ($this->outputLevel > 0) echo "<hr/>buy Amount from " .round($this->defaultBuyAmount) . " to ".round($defaultBuyAmountNew) . "<br/><hr/>";
-            $this->defaultBuyAmount = $defaultBuyAmountNew;
+            if ($this->outputLevel > 0) echo "<hr/>buy Amount  " .round($this->defaultBuyAmount) . "<br/><hr/>";
+
         }
     }
     public function showResults()
     {
-        echo "start:" . $this->initialSavings . ", end " . round($this->currentSavings + $this->portFolioValue()) . "<br/>";
+        echo ", ENDRESULT:" . round($this->currentSavings + $this->portFolioValue()) . "<br/>";
+    }
+    public function showParams()
+    {
+        echo "initialSavings:" . $this->initialSavings . ", maxNrOfCoins types in portfolio:" . $this->portfolioMaxLength .", reinvest profit:". $this->reInvestProfit . ", start day:" . date( 'd/m/Y',$this->simStartTimestamp) .", nrOfDays:". $this->simDays ;
     }
 }
 
@@ -275,14 +294,29 @@ $startTimestamp = 1518876000;
 $nrOfDays = 10;
 $startSaving = 0;
 
-$sim = new simulation(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel);
+$sim = new simulation();
+$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true);
 $sim->run();
+$sim->showParams();
 $sim->showResults();
 
-$sim->reInit(10000, $startSaving, 500, $startTimestamp, $nrOfDays, $outputLevel);
+$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, true);
 $sim->run();
+$sim->showParams();
 $sim->showResults();
 
+$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
 
+$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
 
+$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
 
