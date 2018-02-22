@@ -1,15 +1,7 @@
 <?php
 $server = $_SERVER['SERVER_NAME'];
+require "../config.php";
 
-if ($server == '35.190.192.81')
-{
-    require "../config.php";
-}
-else
-{
-    require "../config.php";
-
-}
 error_reporting(E_ALL);
 try {
     $db = new PDO('mysql:host='.$_GLOBALS['dbLocation'].';dbname='.$_GLOBALS['db'].';charset=utf8mb4', $_GLOBALS['dbUser'], $_GLOBALS['dbPass']);
