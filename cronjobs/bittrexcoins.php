@@ -21,7 +21,7 @@ try {
     echo 'Not possible to connect to mysql: ',  $e->getMessage(), "\n";
 }
 echo "Start checking bittrex coins";
-/*
+
 foreach ($coindata[result] as $coin)
 {
     $statement = $db->prepare("INSERT IGNORE INTO coins('name','symbol','bittrex')
@@ -34,5 +34,5 @@ foreach ($coindata[result] as $coin)
         echo 'Insert into coins not working: ',  $e->getMessage(), "\n";
     }
 }
-*/
+
 ?>
