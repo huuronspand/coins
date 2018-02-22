@@ -24,8 +24,6 @@ try {
 
     foreach ($coindata->Data as $coin)
     {
-    echo $coin->Name."aaa";
-    die();
         $statement = $db->prepare("INSERT INTO coins (coinName,coinSymbol,cryptopia) VALUES (:name, :symbol, :cryptopia1) on duplicate key update cryptopia=:cryptopia2");
 
         try {
