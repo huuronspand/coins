@@ -3,15 +3,12 @@ $server = $_SERVER['SERVER_NAME'];
 
 if ($server == '35.190.192.81')
 {
-    require "/var/www/coins/config.php";
+    require "../config.php";
 }
 else
 {
-    $_GLOBALS['dbLocation'] = '35.190.192.81';
-    $_GLOBALS['db'] = 'coinstats';
-    $_GLOBALS['dbUser'] = 'coins';
-    //$_GLOBALS['dbPass'] = 'N-Ho9CDhRGMUS4345';
-    $_GLOBALS['dbPass'] = 'qewdqwfe44fwwe4ffw4efw4';
+    require "../config.php";
+
 }
 error_reporting(E_ALL);
 try {
