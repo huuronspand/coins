@@ -23,8 +23,7 @@ try {
 
 foreach ($coindata[result] as $coin)
 {
-    $coina = (array)$coin;
-    $statement = $db->prepare("INSERT IGNORE INTO coins(name,symbol,bittrex)
+    $statement = $db->prepare("INSERT IGNORE INTO coins('name','symbol','bittrex')
         VALUES(?,?,?)");
 
     try {
