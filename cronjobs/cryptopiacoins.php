@@ -24,6 +24,8 @@ try {
 
     foreach ($coindata->Data as $coin)
     {
+        var_dump($coin);
+        echo "<hr>";
         $statement = $db->prepare("INSERT IGNORE INTO coins_cryptopia(cryptopiaName,cryptopiaSymbol)
             VALUES(?,?)");
 
