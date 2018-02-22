@@ -24,17 +24,12 @@ try {
 
     foreach ($coindata->Data as $coin)
     {
-        $statement = $db->prepare("INSERT INTO coins (coinName,coinSymbol,cryptopia) VALUES (:name, :symbol, :cryptopia1) on duplicate key update cryptopia=:cryptopia2");
+        $statement = $db->prepare("INSERT IGNORE INTO coins_cryptopia(cryptopiaName,cryptopiaSymbol)
+            VALUES(?,?)");
 
         try {
             echo "-";
-
-            $statement->bindParam(":name", $coin->Name);
-            $statement->bindParam(":symbol", $coin->Symbol);
-            $statement->bindParam(":cryptopia1", 1);
-            $statement->bindParam(":cryptopia2", 1);
-            $statement->execute();
-
+            $statement->execute(array($coin->Name,$coin->Symbol));
         } catch (Exception $e) {
             echo 'Insert into coins not working: ',  $e->getMessage(), "\n";
         }
