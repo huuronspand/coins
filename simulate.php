@@ -154,10 +154,9 @@ class simulation
                 select *
                 FROM 
                 (
-                SELECT * FROM coinstats.coinstats, coinstats.coins
+                SELECT * FROM coinstats.coinstats, coinstats.bittrex_coins
                 WHERE 24h_volume_usd > 1000000 
-                AND coinName = name
-                AND (bittrex = 1 OR kraken = 1)   
+                AND coinName = bittrexName 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 order by timestamp desc, percent_change_24h desc
@@ -167,12 +166,11 @@ class simulation
                 select *
                 from
                 (
-                SELECT * FROM coinstats.coinstats, coinstats.coins
+                SELECT * FROM coinstats.coinstats, coinstats.bittrex_coins
                 where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 and " . $this->getClause($this->portfolio) . "
-                 		AND coinName = name
-                AND (bittrex = 1 OR kraken = 1)   
+                 		AND coinName = bittrexName
                 order by timestamp desc, percent_change_24h desc
                 limit ". round($this->portfolioMaxLength) ."
                 ) tmp2
