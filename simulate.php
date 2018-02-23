@@ -113,7 +113,7 @@ class simulation
     private function buyCoin($coinCode,$coinInfo, $outputLevel)
     {
         $this->portfolio[$coinCode] = $coinInfo;
-        if ($outputLevel) echo "buy " . $coinCode . "(" .  $this->defaultBuyAmount.") <br/>";
+        if ($this->outputLevel > 1) echo "buy " . $coinCode . "(" .  $this->defaultBuyAmount.") <br/>";
         $this->currentSavings = $this->currentSavings - $this->defaultBuyAmount;
         $this->portfolio[$coinCode]["amount"] = $this->defaultBuyAmount;
         return $this->portfolio;
@@ -121,7 +121,7 @@ class simulation
     private function sellCoin($coinCode,$coinInfo, $outputLevel)
     {
         unset($this->portfolio[$coinCode]);
-        if ($outputLevel) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $this->defaultBuyAmount ."<br/>";
+        if ($this->outputLevel > 1) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $this->defaultBuyAmount ."<br/>";
         $this->currentSavings = $this->currentSavings + (1 + ($coinInfo["percent_change_24h"]/100)) * $this->defaultBuyAmount;
         return $this->portfolio;
     }
@@ -189,8 +189,9 @@ class simulation
                 ) tmp2
             ) tmp3
             order by timestamp desc, percent_change_24h desc";
+        if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
         $result = $db->query($sql);
-        $topCoins = array();
+
         if($result !== false) {
             $this->topCoins = array();
             foreach($result as $row)
@@ -273,7 +274,7 @@ class simulation
                 }
             }
             $portfolioVal = round($this->portFolioValue());
-            if ($this->outputLevel > 1) $this->displayFolio();
+            if ($this->outputLevel > 0) $this->displayFolio();
             if ($this->outputLevel > 0) echo "<hr/><div style='background-color:lightblue'>tot value : " . round($this->currentSavings + $portfolioVal)."( total growth:" .  (-100+round(100*($this->currentSavings + $portfolioVal) / $this->initialSavings) ). "% ) " . " (in savings:" . round($this->currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
             if ($this->outputLevel > 0) echo "<hr/>buy Amount  " .round($this->defaultBuyAmount) . "<br/><hr/>";
 
@@ -294,6 +295,7 @@ $startTimestamp = 1518876000;
 $nrOfDays = 10;
 $startSaving = 0;
 
+if (isset($_GET["outputlevel"])) $outputLevel = $_GET["outputlevel"];
 $sim = new simulation();
 $sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true);
 $sim->run();
