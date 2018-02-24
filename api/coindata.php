@@ -1,4 +1,5 @@
 <?php
+header('Access-Control-Allow-Origin: *');
 $server = $_SERVER['SERVER_NAME'];
 require "../../config.php";
 
@@ -23,7 +24,6 @@ function getData($timestamp)
                 order by timestamp desc, percent_change_24h desc
                 limit 500";
 
-
         $result = $db->query($sql,PDO::FETCH_ASSOC);
 
         if($result !== false) {
@@ -47,6 +47,5 @@ if (!is_numeric($_GET["year"]) || !is_numeric($_GET["month"]) || !is_numeric($_G
     die('only numeric values are allowed');
 }
 $timestamp = mktime( 2 , 2, 2, $_GET["month"] , $_GET["day"], $_GET["year"]);
-
 
 echo "{\"success\":true,\"result\":" . json_encode(getData($timestamp)) . "}";
