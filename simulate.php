@@ -162,9 +162,13 @@ class simulation
                 (
                 SELECT coinstats.* 
                 FROM coinstats.coinstats, 
-                ( select  bittrexName nameActiveName 
+                ( select  bittrexName  
                   from    coinstats.coins_bittrex
                   where   bittrexActive=1
+                  union 
+                  select  hitbtcName  
+                  from    coinstats.coins_hitbtc
+                  where   hitbtcActive=1
                   union 
                   select  cryptopiaName 
                   from    coinstats.coins_cryptopia

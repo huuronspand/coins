@@ -24,7 +24,7 @@ try {
 
     foreach ($coindata as $coin)
     {
-        if($coin->delisted === "false")
+        if($coin->delisted === false)
             $coin->Status = 1;
         else
             $coin->Status = 0;
