@@ -330,3 +330,7 @@ $sim->run();
 $sim->showParams();
 $sim->showResults();
 
+$sim->init(10000, $startSaving, 200, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
