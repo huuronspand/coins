@@ -127,7 +127,19 @@ class simulation
     }
 
 
+    private function shouldBuy($topCoin)
+    {
+        $result = false;
 
+        /* coin is doing good */
+        if ($topCoin['percent_change_24h'] > 10)
+        {
+            //echo("should buy:<br/>");
+            $result = true;
+        }
+
+        return $result;
+    }
     private function shouldSell($topCoin, $topPosition)
     {
         $result = false;
@@ -140,7 +152,7 @@ class simulation
                 ($topPosition > $this->portfolioMaxLength)
                 ||
                 /* coin is doing bad */
-                ($topCoin['percent_change_24h'] < 0)
+                ($topCoin['percent_change_24h'] < 5)
             )
         )
         {
@@ -173,12 +185,12 @@ class simulation
                   select  cryptopiaName 
                   from    coinstats.coins_cryptopia
                   where   cryptopiaActive=1) coins
-                WHERE 24h_volume_usd > 1000000 
+                WHERE 24h_volume_usd > 10000000 
                 AND coinstats.name = coins.nameActiveName 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 order by timestamp desc, percent_change_24h desc
-                limit ". round($this->portfolioMaxLength) ."
+                limit ". (round($this->portfolioMaxLength)) ."
                 ) tmp1
                 UNION
                 select *
@@ -209,84 +221,62 @@ class simulation
 
     public function run()
     {
-        for ($t = 1;  $t <= $this->simDays; $t++)
-        {
-
-
+        for ($t = 1; $t <= $this->simDays; $t++) {
             if ($this->outputLevel > 0) echo "<hr/>Day " . $t . "<br/>";
 
             $timestamp = $this->simStartTimestamp + $t * $this->oneDay;
             $topCoins = $this->getTopCoins($timestamp);
 
-            if ($topCoins)
-            {
+            if ($topCoins) {
                 /*** sell first ****/
                 $positionInTopCoins = 1;
-                foreach ($topCoins as $topCoin)
-                {
-                    if ($this->shouldSell($topCoin, $positionInTopCoins) )
-                    {
-                        $this->sellCoin($topCoin['id'],$this->portfolio[$topCoin['id']] ,$this->outputLevel);
+                foreach ($topCoins as $topCoin) {
+                    if ($this->shouldSell($topCoin, $positionInTopCoins)) {
+                        $this->sellCoin($topCoin['id'], $this->portfolio[$topCoin['id']], $this->outputLevel);
                     }
                     $positionInTopCoins++;
                 }
-                /*** then buy ****/
-                if ($this->reInvestProfit)
-                {
-                    $i = count($this->portfolio);
-                    $ready = false;
-                    $nrToBuy = 0;
-                    while ($i <= $this->portfolioMaxLength && !$ready)
-                    {
-                        $ready = true;
-                        foreach ($topCoins as $topCoin)
-                        {
-                            if ($i < $this->portfolioMaxLength  && !array_key_exists($topCoin['id'],$this->portfolio))
-                            {
-                                if ($this->currentSavings  >= $this->defaultBuyAmount)
-                                {
-                                    $nrToBuy++;
-                                    $ready = false;
-                                    $i++;
-                                }
-                            }
 
-                        }
-                    }
-                    if ($nrToBuy > 0) $this->defaultBuyAmount = $this->currentSavings / $nrToBuy;
-                }
 
                 $i = count($this->portfolio);
-
                 $ready = false;
-                while ($i <= $this->portfolioMaxLength && !$ready)
-                {
+                $nrToBuy = 0;
+                $toBuy = array();
+                while ($i <= $this->portfolioMaxLength && !$ready) {
                     $ready = true;
-                    foreach ($topCoins as $topCoin)
-                    {
-                        if ($i < $this->portfolioMaxLength  && !array_key_exists($topCoin['id'],$this->portfolio))
-                        {
-                            if ($this->currentSavings  >= $this->defaultBuyAmount)
-                            {
-                                $this->buyCoin($topCoin['id'],$topCoin, $this->outputLevel);
+                    foreach ($topCoins as $topCoin) {
+                        if ($i < $this->portfolioMaxLength && !array_key_exists($topCoin['id'], $this->portfolio)) {
+                            if ($this->shouldBuy($topCoin)) {
+                                $toBuy[$topCoin['id']] = $topCoin;
+                                $nrToBuy++;
                                 $ready = false;
+                                $i++;
                             }
-
                         }
-                        $i = count($this->portfolio);
                     }
                 }
-            }
-            $portfolioVal = round($this->portFolioValue());
-            if ($this->outputLevel > 0) $this->displayFolio();
-            if ($this->outputLevel > 0) echo "<hr/><div style='background-color:lightblue'>tot value : " . round($this->currentSavings + $portfolioVal)."( total growth:" .  (-100+round(100*($this->currentSavings + $portfolioVal) / $this->initialSavings) ). "% ) " . " (in savings:" . round($this->currentSavings) . ", in portfolio:" . $portfolioVal  . ")</div>";
-            if ($this->outputLevel > 0) echo "<hr/>buy Amount  " .round($this->defaultBuyAmount) . "<br/><hr/>";
 
+                /*** reinvest profit? ****/
+                if ($nrToBuy > 0 && $this->reInvestProfit) $this->defaultBuyAmount = $this->currentSavings / count($toBuy);
+
+                /*** then buy ****/
+
+                foreach ($toBuy as $coin) {
+                    $this->buyCoin($coin['id'], $coin, $this->outputLevel);
+                }
+
+                $portfolioVal = round($this->portFolioValue());
+                if ($this->outputLevel > 0) $this->displayFolio();
+                if ($this->outputLevel > 0) echo "<hr/><div style='background-color:lightblue'>tot value : " . round($this->currentSavings + $portfolioVal) . "( total growth:" . (-100 + round(100 * ($this->currentSavings + $portfolioVal) / $this->initialSavings)) . "% ) " . " (in savings:" . round($this->currentSavings) . ", in portfolio:" . $portfolioVal . ")</div>";
+                if ($this->outputLevel > 0) echo "<hr/>buy Amount  " . round($this->defaultBuyAmount) . "<br/><hr/>";
+
+            }
         }
     }
     public function showResults()
     {
-        echo ", ENDRESULT:" . round($this->currentSavings + $this->portFolioValue()) . "<br/>";
+        echo ", endSavings:" . round($this->currentSavings + $this->portFolioValue());
+        echo "( cash:". round($this->currentSavings) .  ", portfolio:" . round($this->portFolioValue()) . " )<br/>";
     }
     public function showParams()
     {
@@ -305,6 +295,16 @@ $sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, 
 $sim->run();
 $sim->showParams();
 $sim->showResults();
+$sim = new simulation();
+$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
+
+$sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
 
 $sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, true);
 $sim->run();
@@ -320,8 +320,12 @@ $sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel,
 $sim->run();
 $sim->showParams();
 $sim->showResults();
-
 $sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
+
+$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false);
 $sim->run();
 $sim->showParams();
 $sim->showResults();
