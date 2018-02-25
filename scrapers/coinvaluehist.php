@@ -1,5 +1,5 @@
 <?php
-
+set_time_limit ( 3600 );
 require "../../config.php";
 require_once ("../classes/simple_html_dom.php");
 
