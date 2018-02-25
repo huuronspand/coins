@@ -320,10 +320,7 @@ $sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel,
 $sim->run();
 $sim->showParams();
 $sim->showResults();
-$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, false);
-$sim->run();
-$sim->showParams();
-$sim->showResults();
+
 
 $sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false);
 $sim->run();
@@ -331,6 +328,22 @@ $sim->showParams();
 $sim->showResults();
 
 $sim->init(10000, $startSaving, 200, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
+
+echo "<hr>Deze zijn wel save makkelijk bij te houden en rewarding<br>";
+$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
+
+$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->run();
+$sim->showParams();
+$sim->showResults();
+
+$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, false);
 $sim->run();
 $sim->showParams();
 $sim->showResults();
