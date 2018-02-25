@@ -366,7 +366,7 @@ $urls = array
     'https://coinmarketcap.com/historical/20170521/',
     'https://coinmarketcap.com/historical/20170528/',
     'https://coinmarketcap.com/historical/20170604/',
-    'https://coinmarketcap.com/historical/20170611/',
+    'https://coinmarketcap.com/historical/20170611/', 
     'https://coinmarketcap.com/historical/20170618/',
     'https://coinmarketcap.com/historical/20170625/',
     'https://coinmarketcap.com/historical/20170702/',
