@@ -22,7 +22,7 @@ function getData($timestamp)
                 WHERE timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $oneDay) . ")))
                 order by timestamp desc, percent_change_24h desc
-                limit 500";
+                limit 2000";
 
         $result = $db->query($sql,PDO::FETCH_ASSOC);
 
