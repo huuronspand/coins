@@ -289,8 +289,38 @@ $startTimestamp = 1518876000;
 $nrOfDays = 10;
 $startSaving = 0;
 
+echo "options: <br/>
+outputlevel=0/1/2/3 (default 0) <br/>
+startdate=YYYYMMDD (default 20180217)<br/>>
+nrofdays={number} (default 10)<hr/> <br/><br/>";
+
 if (isset($_GET["outputlevel"])) $outputLevel = $_GET["outputlevel"];
+if (isset($_GET["startdate"]))
+{ /* 20181231*/
+    $ymd = $_GET["startdate"];
+    if (is_numeric($ymd) || strlen($ymd) == 8 )
+    {
+        $year = substr($ymd,0,4);
+        $month =substr($ymd,4,2);
+        $day =substr($ymd,6,2);
+        $startTimestamp = mktime( 2 , 2, 2, $month , $day, $year);
+    }
+
+}
+
+if (isset($_GET["nrofdays"]))
+{ /* 20181231*/
+    $nr = $_GET["nrofdays"];
+    if (is_numeric($nr)  )
+    {
+        $nrOfDays = (int)$nr;
+        if ($nrOfDays > 100) $nrOfDays = 100;
+    }
+}
+
 $sim = new simulation();
+/*
+
 $sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true);
 $sim->run();
 $sim->showParams();
@@ -331,7 +361,7 @@ $sim->init(10000, $startSaving, 200, $startTimestamp, $nrOfDays, $outputLevel, t
 $sim->run();
 $sim->showParams();
 $sim->showResults();
-
+*/
 echo "<hr>Deze zijn wel save makkelijk bij te houden en rewarding<br>";
 $sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, false);
 $sim->run();

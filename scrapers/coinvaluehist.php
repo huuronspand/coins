@@ -145,6 +145,7 @@ global $db;
 }
 $urls = array
 (
+        /*
     'https://coinmarketcap.com/historical/20130428/',
     'https://coinmarketcap.com/historical/20130505/',
     'https://coinmarketcap.com/historical/20130512/',
@@ -181,6 +182,9 @@ $urls = array
     'https://coinmarketcap.com/historical/20131215/',
     'https://coinmarketcap.com/historical/20131222/',
     'https://coinmarketcap.com/historical/20131229/',
+    */
+
+
     'https://coinmarketcap.com/historical/20140105/',
     'https://coinmarketcap.com/historical/20140112/',
     'https://coinmarketcap.com/historical/20140119/',
@@ -318,6 +322,7 @@ $urls = array
     'https://coinmarketcap.com/historical/20160731/',
     'https://coinmarketcap.com/historical/20160807/',
     'https://coinmarketcap.com/historical/20160814/',
+    
     'https://coinmarketcap.com/historical/20160821/',
     'https://coinmarketcap.com/historical/20160828/',
     'https://coinmarketcap.com/historical/20160904/',
