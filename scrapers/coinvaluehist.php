@@ -404,9 +404,20 @@ $urls = array
     'https://coinmarketcap.com/historical/20180211/',
     'https://coinmarketcap.com/historical/20180218/'
 );
-foreach ($urls as $url)
+if (isset($_GET["start"]) &&  $_GET["start"]=='1')
 {
-    scrapeHistData($url);
+    foreach ($urls as $url)
+    {
+        scrapeHistData($url);
+    }
+}
+else
+{
+    echo "start met ?start=1     ...... duurt even...onderstaande urls worden gescraped<br/><hr/>";
+    foreach ($urls as $url)
+    {
+        echo $url . "<br/>";
+    }
 }
 
 ?>
