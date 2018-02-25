@@ -289,7 +289,7 @@ $startTimestamp = 1518876000;
 $nrOfDays = 10;
 $startSaving = 0;
 
-echo "options: <br/>
+echo "Options: <br/>
 outputlevel=0/1/2/3 (default 0) <br/>
 startdate=YYYYMMDD (default 20180217)<br/>>
 nrofdays={number} (default 10)<hr/> <br/><br/>";
