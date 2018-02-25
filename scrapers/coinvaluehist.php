@@ -182,7 +182,7 @@ $urls = array
     'https://coinmarketcap.com/historical/20131215/',
     'https://coinmarketcap.com/historical/20131222/',
     'https://coinmarketcap.com/historical/20131229/',
-    */
+
 
 
     'https://coinmarketcap.com/historical/20140105/',
@@ -322,7 +322,7 @@ $urls = array
     'https://coinmarketcap.com/historical/20160731/',
     'https://coinmarketcap.com/historical/20160807/',
     'https://coinmarketcap.com/historical/20160814/',
-    
+
     'https://coinmarketcap.com/historical/20160821/',
     'https://coinmarketcap.com/historical/20160828/',
     'https://coinmarketcap.com/historical/20160904/',
@@ -330,6 +330,7 @@ $urls = array
     'https://coinmarketcap.com/historical/20160918/',
     'https://coinmarketcap.com/historical/20160925/',
     'https://coinmarketcap.com/historical/20161002/',
+        */
     'https://coinmarketcap.com/historical/20161009/',
     'https://coinmarketcap.com/historical/20161016/',
     'https://coinmarketcap.com/historical/20161023/',
