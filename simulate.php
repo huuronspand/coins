@@ -246,7 +246,7 @@ class simulation
                     $ready = true;
                     foreach ($topCoins as $topCoin) {
                         if ($i < $this->portfolioMaxLength && !array_key_exists($topCoin['id'], $this->portfolio)) {
-                            if ($this->shouldBuy($topCoin)) {
+                            if ($this->shouldBuy($topCoin) && $this->currentSavings > 0) {
                                 $toBuy[$topCoin['id']] = $topCoin;
                                 $nrToBuy++;
                                 $ready = false;
@@ -257,7 +257,11 @@ class simulation
                 }
 
                 /*** reinvest profit? ****/
-                if ($nrToBuy > 0 && $this->reInvestProfit) $this->defaultBuyAmount = $this->currentSavings / count($toBuy);
+
+                if ($nrToBuy > 0 && $this->reInvestProfit)
+                {
+                    $this->defaultBuyAmount = $this->currentSavings / count($toBuy);
+                }
 
                 /*** then buy ****/
 
@@ -291,7 +295,7 @@ $startSaving = 0;
 
 echo "Options: <br/>
 outputlevel=0/1/2/3 (default 0) <br/>
-startdate=YYYYMMDD (default 20180217)<br/>>
+startdate=YYYYMMDD (default 20180217)<br/>
 nrofdays={number} (default 10)<hr/> <br/><br/>";
 
 if (isset($_GET["outputlevel"])) $outputLevel = $_GET["outputlevel"];
@@ -319,13 +323,14 @@ if (isset($_GET["nrofdays"]))
 }
 
 $sim = new simulation();
-/*
+
 
 $sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true);
 $sim->run();
 $sim->showParams();
 $sim->showResults();
 $sim = new simulation();
+
 $sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false);
 $sim->run();
 $sim->showParams();
@@ -361,7 +366,7 @@ $sim->init(10000, $startSaving, 200, $startTimestamp, $nrOfDays, $outputLevel, t
 $sim->run();
 $sim->showParams();
 $sim->showResults();
-*/
+
 echo "<hr>Deze zijn wel save makkelijk bij te houden en rewarding<br>";
 $sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, false);
 $sim->run();
