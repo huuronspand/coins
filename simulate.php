@@ -221,7 +221,7 @@ class simulation
 
     public function run()
     {
-        for ($t = 1; $t <= $this->simDays; $t++) {
+        for ($t = 0; $t < $this->simDays; $t++) {
             if ($this->outputLevel > 0) echo "<hr/>Day " . $t . "<br/>";
 
             $timestamp = $this->simStartTimestamp + $t * $this->oneDay;
