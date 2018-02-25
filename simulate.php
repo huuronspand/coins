@@ -314,7 +314,7 @@ if (isset($_GET["nrofdays"]))
     if (is_numeric($nr)  )
     {
         $nrOfDays = (int)$nr;
-        if ($nrOfDays > 100) $nrOfDays = 100;
+        if ($nrOfDays > 400) $nrOfDays = 400;
     }
 }
 
