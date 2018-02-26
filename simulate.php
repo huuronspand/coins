@@ -127,7 +127,7 @@ class simulation
     private function sellCoin($topCoin,$coinInfo, $outputLevel)
     {
         unset($this->portfolio[$topCoin['id']]);
-        if ($this->outputLevel > 1) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $this->defaultBuyAmount ."<br/>";
+        if ($this->outputLevel > 1) echo "sell " . $coinCode . ", changed " . $topCoin["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $this->defaultBuyAmount ."<br/>";
         $this->currentSavings = $this->currentSavings + (1 + ($topCoin["percent_change_24h"]/100)) * $coinInfo['amount'];
         return $this->portfolio;
     }
@@ -293,9 +293,10 @@ class simulation
 
     public function showResults()
     {
+        $result = 100* round(( $this->currentSavings + $this->portFolioValue()  )  / $this->initialSavings ,2);
         echo "<table>
                     <tr   style='text-align:left'>
-                        <th width='130'>growth</th>
+                        <th width='130'>result</th>
                         <th width='130'>initialSavings</th>
                         <th width='130'>endSavings</th>
                         <th width='130'>cash</th> 
@@ -309,7 +310,7 @@ class simulation
                     </tr>
                     
                     <tr  style='text-align:left'>
-                      <td style='background-color:lightblue'>". 100* round(( $this->currentSavings + $this->portFolioValue()  )  / $this->initialSavings ,2).  "%</td>
+                      <td style='background-color:lightblue'>". ($result < 100 ? '<font color=red>':'<font color=green>') . $result .  "%</td>
                         <td >" . $this->initialSavings . "</td>
                         <td >" . round($this->currentSavings + $this->portFolioValue()). "</td>
                          <td>". round($this->currentSavings) .  "</td>
