@@ -124,11 +124,11 @@ class simulation
         $this->portfolio[$coinCode]["amount"] = $this->defaultBuyAmount;
         return $this->portfolio;
     }
-    private function sellCoin($coinCode,$coinInfo, $outputLevel)
+    private function sellCoin($topCoin,$coinInfo, $outputLevel)
     {
-        unset($this->portfolio[$coinCode]);
+        unset($this->portfolio[$topCoin['id']]);
         if ($this->outputLevel > 1) echo "sell " . $coinCode . ", changed " . $coinInfo["percent_change_24h"] .  "%, profit:".($coinInfo["percent_change_24h"]/100) * $this->defaultBuyAmount ."<br/>";
-        $this->currentSavings = $this->currentSavings + (1 + ($coinInfo["percent_change_24h"]/100)) * $this->defaultBuyAmount;
+        $this->currentSavings = $this->currentSavings + (1 + ($topCoin["percent_change_24h"]/100)) * $coinInfo['amount'];
         return $this->portfolio;
     }
 
@@ -245,7 +245,7 @@ class simulation
                 $positionInTopCoins = 1;
                 foreach ($topCoins as $topCoin) {
                     if ($this->shouldSell($topCoin, $positionInTopCoins,$t)) {
-                        $this->sellCoin($topCoin['id'], $this->portfolio[$topCoin['id']], $this->outputLevel);
+                        $this->sellCoin($topCoin, $this->portfolio[$topCoin['id']], $this->outputLevel);
                     }
                     $positionInTopCoins++;
                 }
