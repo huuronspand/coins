@@ -20,13 +20,14 @@ try {
     echo 'Not possible to connect to mysql: ',  $e->getMessage(), "\n";
 }
 
+echo "oke";
+die();
+
 $deleteSql = "delete
 from coinstats.coinstats
 where timestamp between unix_timestamp(CURDATE()) and unix_timestamp(CURDATE())+24*60*60";
 $db.exec($deleteSql);
 
-echo "oke";
-die();
 foreach ($coindata as $coin)
 {
     $coina = (array)$coin;
