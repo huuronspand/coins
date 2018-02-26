@@ -1,0 +1,20 @@
+
+table
+{
+    border-collapse:collapse;
+    border:1px solid darkgrey;
+}
+
+table td
+{
+    border:1px solid darkgrey;
+    font-family: "Open Sans", sans-serif;
+    font-weight: 100;
+}
+
+table th
+{
+    "Open Sans", sans-serif;
+    font-weight: 100;
+    background-color: lightcyan;
+}

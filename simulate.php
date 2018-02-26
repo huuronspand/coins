@@ -27,14 +27,17 @@ class simulation
     var $outputLevel;
     var $test = 1;
     var $reInvestProfit;
+    var $sellEveryNrOfDays;
 
-    public function __construct($initialSavings = 10000,
-                         $savingsInCoins      = 0,
-                         $defaultBuyAmount = 1000,
-                         $simStartTimestamp = 1518876000,
-                         $simDays= 10,
-                         $outputLevel = true,
-                         $reInvestProfit = true)
+
+    public function __construct(     $initialSavings = 10000,
+                                     $savingsInCoins      = 0,
+                                     $defaultBuyAmount = 1000,
+                                     $simStartTimestamp = 1518876000,
+                                     $simDays= 10,
+                                     $outputLevel = true,
+                                     $reInvestProfit = true,
+                                     $sellEveryNrOfDays = 0)
     {
         $this->oneDay  = 24 * 60 * 60;
         $this->init(    $initialSavings ,
@@ -43,21 +46,24 @@ class simulation
                         $simStartTimestamp,
                         $simDays,
                         $outputLevel,
-                        $reInvestProfit);
+                        $reInvestProfit,
+                        $sellEveryNrOfDays);
     }
 
-    public function init( $initialSavings = 10000,
-                    $savingsInCoins      = 0,
-                    $defaultBuyAmount = 1000,
-                    $simStartTimestamp = 1518876000,
-                    $simDays= 10,
-                    $outputLevel = true,
-                    $reInvestProfit=true)
+    public function init(   $initialSavings = 10000,
+                            $savingsInCoins      = 0,
+                            $defaultBuyAmount = 1000,
+                            $simStartTimestamp = 1518876000,
+                            $simDays= 10,
+                            $outputLevel = true,
+                            $reInvestProfit=true,
+                            $sellEveryNrOfDays = 0)
     {
         $this->initialSavings      = $initialSavings;
         $this->currentSavings      = $this->initialSavings;
         $this->savingsInCoins      = $savingsInCoins;
         $this->defaultBuyAmount    = $defaultBuyAmount;
+        $this->sellEveryNrOfDays     = $sellEveryNrOfDays;
         $this->portfolioMaxLength = round($this->currentSavings / $this->defaultBuyAmount);
         $this->topCoins = array();
         $this->portfolio = array();
@@ -140,14 +146,21 @@ class simulation
 
         return $result;
     }
-    private function shouldSell($topCoin, $topPosition)
+    private function shouldSell($topCoin, $topPosition, $simDay)
     {
         $result = false;
+
         if  (
             /* we have a in portfolio coin which is out op top x today */
             array_key_exists($topCoin['id'], $this->portfolio)
             &&
-            (1==1 ||
+            (
+                /* sell portfolio after x days? */
+                (   $this->sellEveryNrOfDays > 0 &&
+                    $simDay > 0 &&
+                    ($simDay % $this->sellEveryNrOfDays == 0)
+                )
+                ||
                 /* coin fell out of top */
                 ($topPosition > $this->portfolioMaxLength)
                 ||
@@ -231,7 +244,7 @@ class simulation
                 /*** sell first ****/
                 $positionInTopCoins = 1;
                 foreach ($topCoins as $topCoin) {
-                    if ($this->shouldSell($topCoin, $positionInTopCoins)) {
+                    if ($this->shouldSell($topCoin, $positionInTopCoins,$t)) {
                         $this->sellCoin($topCoin['id'], $this->portfolio[$topCoin['id']], $this->outputLevel);
                     }
                     $positionInTopCoins++;
@@ -277,14 +290,38 @@ class simulation
             }
         }
     }
+
     public function showResults()
     {
-        echo ", endSavings:" . round($this->currentSavings + $this->portFolioValue());
-        echo "( cash:". round($this->currentSavings) .  ", portfolio:" . round($this->portFolioValue()) . " )<br/>";
-    }
-    public function showParams()
-    {
-        echo "initialSavings:" . $this->initialSavings . ", maxNrOfCoins types in portfolio:" . $this->portfolioMaxLength .", reinvest profit:". $this->reInvestProfit . ", start day:" . date( 'd/m/Y',$this->simStartTimestamp) .", nrOfDays:". $this->simDays ;
+        echo "<table>
+                    <tr   style='text-align:left'>
+                        <th width='130'>growth</th>
+                        <th width='130'>initialSavings</th>
+                        <th width='130'>endSavings</th>
+                        <th width='130'>cash</th> 
+                        <th width='130'>portfolio</th> 
+                        <th width='130'>maxNrOfCoins</th>
+                        <th width='130'>reinvest profit</th> 
+                        <th width='130'>start day</th> 
+                        <th width='130'>nrOfDays</th> 
+                        <th width='130'>sellEvery</th>                         
+
+                    </tr>
+                    
+                    <tr  style='text-align:left'>
+                      <td style='background-color:lightblue'>". 100* round(( $this->currentSavings + $this->portFolioValue()  )  / $this->initialSavings ,2).  "%</td>
+                        <td >" . $this->initialSavings . "</td>
+                        <td >" . round($this->currentSavings + $this->portFolioValue()). "</td>
+                         <td>". round($this->currentSavings) .  "</td>
+      
+                        <td>" . round($this->portFolioValue()) . "</td>
+                        <td>". $this->portfolioMaxLength."</td>
+                        <td>". $this->reInvestProfit . "</td>
+                        <td>". date( 'd/m/Y',$this->simStartTimestamp) ."</td>
+                        <td>". $this->simDays ."</td>
+                        <td>". ($this->sellEveryNrOfDays > 0 ? $this->sellEveryNrOfDays : "disabled") ."</td>
+                    </tr>
+              </table><br/>";
     }
 }
 
@@ -292,6 +329,13 @@ $outputLevel = 0;
 $startTimestamp = 1518876000;
 $nrOfDays = 10;
 $startSaving = 0;
+
+
+?>
+    <head>
+        <link rel="stylesheet" type="text/css" href="css/coins.css">
+    </head>
+<?php
 
 echo "Options: <br/>
 outputlevel=0/1/2/3 (default 0) <br/>
@@ -322,109 +366,100 @@ if (isset($_GET["nrofdays"]))
     }
 }
 
+$sellEveryNrOfDays = 0; /* 0 = dont sell every x days */
+if (isset($_GET["sellEveryNrOfDays"]))
+{
+    $nr = $_GET["sellEveryNrOfDays"];
+    if (is_numeric($nr) )
+    {
+        $sellEveryNrOfDays = (int)$nr;
+    }
+}
+
 $sim = new simulation();
 
 /*
-$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 $sim = new simulation();
 
-$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
-$sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
-$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
-$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
-$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
 
-$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 */
 
 
 echo "<hr>Deze zijn wel save makkelijk bij te houden en rewarding<br>";
 
-$sim->init(10000, $startSaving, 1666, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 1666, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
-$sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, true , $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
-$sim->showResults();
-
-
-$sim->init(10000, $startSaving, 2500, $startTimestamp, $nrOfDays, $outputLevel, true);
-$sim->run();
-$sim->showParams();
-$sim->showResults();
-
-$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, true);
-$sim->run();
-$sim->showParams();
-$sim->showResults();
-
-$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, true);
-$sim->run();
-$sim->showParams();
 $sim->showResults();
 
 
-$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, true);
+$sim->init(10000, $startSaving, 2500, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
+$sim->showResults();
+
+$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
+$sim->run();
+$sim->showResults();
+
+$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
+$sim->run();
+$sim->showResults();
+
+
+$sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, true, $sellEveryNrOfDays);
+$sim->run();
 $sim->showResults();
 
 echo "<hr/>";
-$sim->init(10000, $startSaving, 1666, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->init(10000, $startSaving, 1666, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
-$sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
 
-$sim->init(10000, $startSaving, 2500, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->init(10000, $startSaving, 2500, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
-$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->init(10000, $startSaving, 3333, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
-$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, false);
+$sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
 
 $sim->init(10000, $startSaving, 10000, $startTimestamp, $nrOfDays, $outputLevel, false);
 $sim->run();
-$sim->showParams();
 $sim->showResults();
