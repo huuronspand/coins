@@ -20,14 +20,12 @@ try {
     echo 'Not possible to connect to mysql: ',  $e->getMessage(), "\n";
 }
 
-echo "oke";
-die();
-
+/*
 $deleteSql = "delete
 from coinstats.coinstats
 where timestamp between unix_timestamp(CURDATE()) and unix_timestamp(CURDATE())+24*60*60";
 $db.exec($deleteSql);
-
+*/
 foreach ($coindata as $coin)
 {
     $coina = (array)$coin;
@@ -37,7 +35,7 @@ foreach ($coindata as $coin)
 
     try {
         echo "-";
-        $statement->execute(array($coin->timestamp,$coin->id,$coin->name,$coin->symbol,$coin->rank,$coin->price_usd,$coin->price_btc,$coina['24h_volume_usd'],$coin->market_cap_usd,$coin->available_supply,$coin->total_supply,$coin->max_supply,$coin->percent_change_1h,$coin->percent_change_24h,$coin->percent_change_7d,$coin->last_updated));
+        //$statement->execute(array($coin->timestamp,$coin->id,$coin->name,$coin->symbol,$coin->rank,$coin->price_usd,$coin->price_btc,$coina['24h_volume_usd'],$coin->market_cap_usd,$coin->available_supply,$coin->total_supply,$coin->max_supply,$coin->percent_change_1h,$coin->percent_change_24h,$coin->percent_change_7d,$coin->last_updated));
     } catch (Exception $e) {
         echo 'Insert into coinstats not working: ',  $e->getMessage(), "\n";
     }
