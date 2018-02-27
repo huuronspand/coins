@@ -25,7 +25,6 @@ class simulation
     var $simDays;
     var $oneDay;
     var $outputLevel;
-    var $test = 1;
     var $reInvestProfit;
     var $sellEveryNrOfDays;
     var $topCoinsPrevDay;
@@ -202,7 +201,7 @@ class simulation
                 )
                 ||
                 (
-                    $change > 1.1
+                    $change > 1.03/////
                 )
             )
 
