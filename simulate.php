@@ -27,7 +27,7 @@ class simulation
     var $outputLevel;
     var $reInvestProfit;
     var $sellEveryNrOfDays;
-    var $topCoinsPrevDay;
+    var $topCoinsPrev;
 
     public function __construct(     $initialSavings = 10000,
                                      $savingsInCoins      = 0,
@@ -126,9 +126,9 @@ class simulation
     private function sellCoin($topCoin,$coinInfo)
     {
 
-        $inPlus= (($topCoin['price_usd'] / $this->portfolio[$topCoin['id']]['price_usd'])-1);
-        if ($this->outputLevel > 1) echo "sell " . $topCoin['id'] . ", changed " . 100 * $inPlus .  "%, profit:".($topCoin["percent_change_24h"]/100) * $this->defaultBuyAmount ."<br/>";
-        $this->currentSavings = $this->currentSavings + (1 + $inPlus) * $coinInfo['amount'];
+        $change= (($topCoin['price_usd'] / $this->portfolio[$topCoin['id']]['price_usd'])-1);
+        if ($this->outputLevel > 1) echo "sell " . $topCoin['id'] . ", changed " . 100 * $change .  "%, profit:". ($change+1) * $this->defaultBuyAmount ."<br/>";
+        $this->currentSavings = $this->currentSavings + (1 + $change) * $coinInfo['amount'];
         unset($this->portfolio[$topCoin['id']]);
         return $this->portfolio;
     }
@@ -153,28 +153,50 @@ class simulation
 
 
     }
-    private function shouldBuy($topCoin,$timestamp)
+    private function shouldBuy($topCoin,$timestamp,$perWeek)
     {
         $result = false;
         $change_1 = false;
-
-        if ($this->topCoinsPrevDay)
+        if ($perWeek)
         {
-            foreach ($this->topCoinsPrevDay as $t) {
+            $daysBack = 7 * $this->oneDay;
+        }
+        else
+        {
+            $daysBack = 1 * $this->oneDay;
+        }
+        if ($this->topCoinsPrev)
+        {
+            foreach ($this->topCoinsPrev as $t) {
                 if ($t['id'] == $topCoin['id'])
                 {
-                    $change_1 = $t['percent_change_24h'];
+                    if ($perWeek)
+                    {
+                        $change_1 = $t['percent_change_7d'];
+                    }
+                    else
+                    {
+                        $change_1 = $t['percent_change_24h'];
+                    }
+
                 }
 
             }
         }
-        if ($change_1)
+        if (!$change_1)
         {
-            $change_1 = $this->getChange($topCoin['symbol'],$timestamp - $this->oneDay);
+            $change_1 = $this->getChange($topCoin['symbol'],$timestamp - $daysBack);
         }
 
         //$change_2 = $this->getChange($topCoin['symbol'],$timestamp - 2 * $this->oneDay);
-        $change = $topCoin['percent_change_24h'];
+        if($perWeek)
+        {
+            $change = $topCoin['percent_change_7d'];
+        }
+        else
+        {
+            $change = $topCoin['percent_change_24h'];
+        }
 
         if ( $change_1 &&  ($change > $change_1) )
         {
@@ -280,7 +302,7 @@ class simulation
             $timestamp = $this->simStartTimestamp + $t * $this->oneDay;
             if ($topCoins)
             {
-                $this->topCoinsPrevDay = $topCoins;
+                $this->topCoinsPrev = $topCoins;
             }
             $topCoins = $this->getTopCoins($timestamp);
 
@@ -297,14 +319,15 @@ class simulation
                 $i = count($this->portfolio);
                 $nrToBuy = 0;
                 $toBuy = array();
-
+                $perWeek = false;
                 foreach ($topCoins as $topCoin)
                 {
+                    if ($topCoin['notes']) $perWeek = true;
                     if ($i < $this->portfolioMaxLength && !array_key_exists($topCoin['id'], $this->portfolio)) {
-                        if ($this->shouldBuy($topCoin,$timestamp) && $this->currentSavings > 0) {
+                        if ($this->shouldBuy($topCoin,$timestamp,$perWeek) && $this->currentSavings > 0)
+                        {
                             $toBuy[$topCoin['id']] = $topCoin;
                             $nrToBuy++;
-                            $ready = false;
                             $i++;
                         }
                     }
@@ -405,7 +428,7 @@ if (isset($_GET["nrofdays"]))
     if (is_numeric($nr)  )
     {
         $nrOfDays = (int)$nr;
-        if ($nrOfDays > 400) $nrOfDays = 400;
+        if ($nrOfDays > 500) $nrOfDays = 500;
     }
 }
 
@@ -455,7 +478,7 @@ $sim->showResults();
 
 
 echo "<hr>Deze zijn wel save makkelijk bij te houden en rewarding<br>";
-
+/*
 $sim->init(10000, $startSaving, 2000, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
 $sim->showResults();
@@ -502,7 +525,7 @@ $sim->showResults();
 $sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, false, $sellEveryNrOfDays);
 $sim->run();
 $sim->showResults();
-
+*/
 $sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true,$sellEveryNrOfDays);
 $sim->run();
 $sim->showResults();
