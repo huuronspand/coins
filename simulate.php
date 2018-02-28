@@ -133,20 +133,33 @@ class simulation
         return $this->portfolio;
     }
 
-    private function getChange($coinCode, $timestamp)
+    private function getChange($coinCode, $timestamp,$perWeek)
     { global $db;
-        $sql = "SELECT min(percent_change_24h) as percent_change_24h
+        if ($perWeek)
+        {
+            $sql = "SELECT min(percent_change_7d) as percent_change
                 FROM coinstats.coinstats
                 WHERE symbol = '". $coinCode."' 
                 AND     timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . ")))
                                      AND  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))";
-       if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
+            if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
+        }
+        else
+        {
+            $sql = "SELECT min(percent_change_24h) as percent_change
+                FROM coinstats.coinstats
+                WHERE symbol = '". $coinCode."' 
+                AND     timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . ")))
+                                     AND  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))";
+            if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
+        }
+
         $result = $db->query($sql);
         if($result !== false) {
 
             foreach($result as $row)
             {
-               $result = $row['percent_change_24h'];
+               $result = $row['percent_change'];
             }
         }
         return $result;
@@ -185,7 +198,7 @@ class simulation
         }
         if (!$change_1)
         {
-            $change_1 = $this->getChange($topCoin['symbol'],$timestamp - $daysBack);
+            $change_1 = $this->getChange($topCoin['symbol'],$timestamp - $daysBack, $perWeek);
         }
 
         //$change_2 = $this->getChange($topCoin['symbol'],$timestamp - 2 * $this->oneDay);
