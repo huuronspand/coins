@@ -140,7 +140,7 @@ class simulation
             $sql = "SELECT min(percent_change_7d) as percent_change
                 FROM coinstats.coinstats
                 WHERE symbol = '". $coinCode."' 
-                AND     timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . ")))
+                AND     notes != 'histdata' and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . ")))
                                      AND  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))";
             if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
         }
@@ -149,7 +149,7 @@ class simulation
             $sql = "SELECT min(percent_change_24h) as percent_change
                 FROM coinstats.coinstats
                 WHERE symbol = '". $coinCode."' 
-                AND     timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . ")))
+                AND      notes != 'histdata' and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . ")))
                                      AND  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))";
             if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
         }
@@ -259,39 +259,77 @@ class simulation
                 select *
                 FROM 
                 (
-                SELECT coinstats.* 
+                SELECT Date(from_unixtime(timestamp)) startofday,
+                      max(coinstats.`timestamp`) as `timestamp`, 
+                      max(coinstats.`id`) as `id`, 
+                      max(coinstats.`name`) as `name`, 
+                      max(coinstats.`symbol`) as `symbol`, 
+                      min(coinstats.`rank`) as `rank`, 
+                      avg(coinstats.`price_usd`) as `price_usd`, 
+                      avg(coinstats.`price_btc`) as `price_btc`, 
+                      avg(coinstats.`24h_volume_usd`) as  `24h_volume_usd`,
+                      avg(coinstats.`market_cap_usd`) as `market_cap_usd`, 
+                      avg(coinstats.`available_supply`) as `available_supply`, 
+                      avg(coinstats.`total_supply`) as `total_supply`, 
+                      avg(coinstats.`max_supply`) as `max_supply`, 
+                      avg(coinstats.`percent_change_1h`) as percent_change_1h, 
+                      avg(coinstats.`percent_change_24h`) as `percent_change_24h`, 
+                      avg(coinstats.`percent_change_7d`) as `percent_change_7d`,
+                      max(coinstats.notes)  as notes
                 FROM coinstats.coinstats, 
-                ( select  bittrexName nameActiveName
+                ( select  bittrexSymbol symbol
                   from    coinstats.coins_bittrex
                   where   bittrexActive=1
                   union 
-                  select  hitbtcName  
+                  select  hitbtcSymbol  
                   from    coinstats.coins_hitbtc
                   where   hitbtcActive=1
                   union 
-                  select  cryptopiaName 
+                  select  cryptopiaSymbol 
                   from    coinstats.coins_cryptopia
                   where   cryptopiaActive=1) coins
                 WHERE 24h_volume_usd > 10000000 
-                AND coinstats.name = coins.nameActiveName 
+                AND coinstats.symbol = coins.symbol 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
-                order by rank
+                and notes != 'histdata'
+                group by Date(from_unixtime(timestamp)), coinstats.symbol
+                order by market_cap_usd
                 limit ". 5*(round($this->portfolioMaxLength)) ."
                 ) tmp1
                 UNION
                 select *
                 from
                 (
-                SELECT * FROM coinstats.coinstats
+                SELECT Date(from_unixtime(timestamp)) startofday,
+                      max(coinstats.`timestamp`) as `timestamp`, 
+                      max(coinstats.`id`) as `id`, 
+                      max(coinstats.`name`) as `name`, 
+                      max(coinstats.`symbol`) as `symbol`, 
+                      min(coinstats.`rank`) as `rank`, 
+                      avg(coinstats.`price_usd`) as `price_usd`, 
+                      avg(coinstats.`price_btc`) as `price_btc`, 
+                      avg(coinstats.`24h_volume_usd`) as  `24h_volume_usd`,
+                      avg(coinstats.`market_cap_usd`) as `market_cap_usd`, 
+                      avg(coinstats.`available_supply`) as `available_supply`, 
+                      avg(coinstats.`total_supply`) as `total_supply`, 
+                      avg(coinstats.`max_supply`) as `max_supply`, 
+                      avg(coinstats.`percent_change_1h`) as percent_change_1h, 
+                      avg(coinstats.`percent_change_24h`) as `percent_change_24h`, 
+                      avg(coinstats.`percent_change_7d`) as `percent_change_7d`,
+                       max(coinstats.notes)  as notes
+                FROM coinstats.coinstats
                 where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 and " . $this->getClause($this->portfolio) . "
-                order by rank
+                and notes != 'histdata'
+                group by Date(from_unixtime(timestamp)) 
+                order by market_cap_usd
                 limit ". 5*round($this->portfolioMaxLength) ."
                 ) tmp2
             ) tmp3
-            order by rank";
+            group by Date(from_unixtime(timestamp)), symbol
+            order by market_cap_usd desc";
         if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
         $result = $db->query($sql);
 
@@ -335,7 +373,7 @@ class simulation
                 $perWeek = false;
                 foreach ($topCoins as $topCoin)
                 {
-                    if ($topCoin['notes']) $perWeek = true;
+                    if ($topCoin['notes'] == 'xxxxx') $perWeek = true;
                     if ($i < $this->portfolioMaxLength && !array_key_exists($topCoin['id'], $this->portfolio)) {
                         if ($this->shouldBuy($topCoin,$timestamp,$perWeek) && $this->currentSavings > 0)
                         {
@@ -406,7 +444,7 @@ class simulation
 
 $outputLevel = 0;
 $startTimestamp = 1518876000;
-$nrOfDays = 10;
+$nrOfDays = 100;
 $startSaving = 0;
 
 
