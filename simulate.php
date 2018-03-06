@@ -118,7 +118,12 @@ class simulation
     private function buyCoin($coinCode,$coinInfo)
     {
         $this->portfolio[$coinCode] = $coinInfo;
-        if ($this->outputLevel > 1) echo "buy " . $coinCode . "(" .  $this->defaultBuyAmount.") <br/>";
+
+        if ($this->outputLevel > 1)
+        {
+            echo "buy " . $coinCode . "(" .  $this->defaultBuyAmount.") <br/>";
+            echo "buy " .  $coinInfo['id'] . ", at:" . $coinInfo['price_usd'] . "<br/>";
+        }
         $this->currentSavings = $this->currentSavings - $this->defaultBuyAmount;
         $this->portfolio[$coinCode]["amount"] = $this->defaultBuyAmount;
         return $this->portfolio;
@@ -126,8 +131,16 @@ class simulation
     private function sellCoin($topCoin,$coinInfo)
     {
 
-        $change= (($topCoin['price_usd'] / $this->portfolio[$topCoin['id']]['price_usd'])-1);
-        if ($this->outputLevel > 1) echo "sell " . $topCoin['id'] . ", changed " . 100 * $change .  "%, profit:". ($change+1) * $this->defaultBuyAmount ."<br/>";
+        $change=  ($topCoin['price_usd']  - $this->portfolio[$topCoin['id']]['price_usd'] ) /  $this->portfolio[$topCoin['id']]['price_usd'];
+
+        if ($this->outputLevel > 1)
+        {
+            echo "sell " . $topCoin['id'] . ", oldvalue:".  ($coinInfo['amount']).", changed "
+                . 100 * $change .  "%, newvalue:". ((1+$change) * $coinInfo['amount']) ."<br/>";
+            echo "sell " .  $topCoin['id'] . ", bougth at:" . $this->portfolio[$topCoin['id']]['price_usd'] .
+                ", now worth:" .
+                $topCoin['price_usd'] . ", changed:" . $change . "<br/>";
+        }
         $this->currentSavings = $this->currentSavings + (1 + $change) * $coinInfo['amount'];
         unset($this->portfolio[$topCoin['id']]);
         return $this->portfolio;
@@ -323,7 +336,7 @@ class simulation
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 and " . $this->getClause($this->portfolio) . "
                 and notes != 'histdata'
-                group by Date(from_unixtime(timestamp)) 
+                group by Date(from_unixtime(timestamp)) , symbol
                 order by market_cap_usd
                 limit ". 5*round($this->portfolioMaxLength) ."
                 ) tmp2
@@ -457,7 +470,7 @@ $startSaving = 0;
 echo "Options: <br/>
 outputlevel=0/1/2/3 (default 0) <br/>
 startdate=YYYYMMDD (default 20180217)<br/>
-nrofdays={number} (default 10)<hr/> <br/><br/>";
+nrofdays={number} (default 100)<hr/> <br/><br/>";
 
 if (isset($_GET["outputlevel"])) $outputLevel = $_GET["outputlevel"];
 if (isset($_GET["startdate"]))
