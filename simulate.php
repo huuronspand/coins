@@ -80,7 +80,7 @@ class simulation
             $clause = $clause . " coinstats.id IN (";
             foreach($this->portfolio as $p)
             {
-                $clause = $clause ."'" . $p['id'] . "',";
+                $clause = $clause ."'" . $p['symbol'] . "',";
             }
 
             $clause = $clause . "'')";
@@ -100,7 +100,7 @@ class simulation
         echo "<tr><td colspan='2'>Portpolio</td>";
         foreach($this->portfolio as $p)
         {
-            echo "<tr><td>". $p['id'] . "</td><td>" .  round($p['amount']) . "</td></tr>" ;
+            echo "<tr><td>". $p['symbol'] . "</td><td>" .  round($p['amount']) . "</td></tr>" ;
         }
         echo "</table>";
     }
@@ -121,8 +121,8 @@ class simulation
 
         if ($this->outputLevel > 1)
         {
-            echo "buy " . $coinCode . "(" .  $this->defaultBuyAmount.") <br/>";
-            echo "buy " .  $coinInfo['id'] . ", at:" . $coinInfo['price_usd'] . "<br/>";
+            echo "buy for " .  round($this->defaultBuyAmount,2). " " .  $coinCode ;
+            echo  " (coin price " . round($coinInfo['price_usd'],2) . ")<br/><hr/>";
         }
         $this->currentSavings = $this->currentSavings - $this->defaultBuyAmount;
         $this->portfolio[$coinCode]["amount"] = $this->defaultBuyAmount;
@@ -131,18 +131,18 @@ class simulation
     private function sellCoin($topCoin,$coinInfo)
     {
 
-        $change=  ($topCoin['price_usd']  - $this->portfolio[$topCoin['id']]['price_usd'] ) /  $this->portfolio[$topCoin['id']]['price_usd'];
+        $change=  ($topCoin['price_usd']  - $this->portfolio[$topCoin['symbol']]['price_usd'] ) /  $this->portfolio[$topCoin['symbol']]['price_usd'];
 
         if ($this->outputLevel > 1)
         {
-            echo "sell " . $topCoin['id'] . ", oldvalue:".  ($coinInfo['amount']).", changed "
-                . 100 * $change .  "%, newvalue:". ((1+$change) * $coinInfo['amount']) ."<br/>";
-            echo "sell " .  $topCoin['id'] . ", bougth at:" . $this->portfolio[$topCoin['id']]['price_usd'] .
-                ", now worth:" .
-                $topCoin['price_usd'] . ", changed:" . $change . "<br/>";
+            echo "sell " . $topCoin['symbol'] . " in portfolio:".  ($coinInfo['amount']).  "  now worth:". round((1+$change) * $coinInfo['amount'],2);
+
+            echo  "( original price coin:" . round($this->portfolio[$topCoin['symbol']]['price_usd'],2) .
+                " now:" .
+                round($topCoin['price_usd'],2) . ")  changed:" . round($change * 100,2) . "<br/><hr/>";
         }
         $this->currentSavings = $this->currentSavings + (1 + $change) * $coinInfo['amount'];
-        unset($this->portfolio[$topCoin['id']]);
+        unset($this->portfolio[$topCoin['symbol']]);
         return $this->portfolio;
     }
 
@@ -194,7 +194,7 @@ class simulation
         if ($this->topCoinsPrev)
         {
             foreach ($this->topCoinsPrev as $t) {
-                if ($t['id'] == $topCoin['id'])
+                if ($t['symbol'] == $topCoin['symbol'])
                 {
                     if ($perWeek)
                     {
@@ -232,13 +232,13 @@ class simulation
 
         return $result;
     }
-    private function shouldSell($topCoin, $topPosition, $simDay)
+    private function shouldSell($topCoin, $simDay, $lastday = false)
     {
         $result = false;
 
-        if  (array_key_exists($topCoin['id'], $this->portfolio))
+        if  (array_key_exists($topCoin['symbol'], $this->portfolio))
         {
-            $change = ($topCoin['price_usd'] / $this->portfolio[$topCoin['id']]['price_usd']);
+            $change = ($topCoin['price_usd'] / $this->portfolio[$topCoin['symbol']]['price_usd']);
 
             if
             (
@@ -251,10 +251,12 @@ class simulation
                 (
                     $change > 1.03/////
                 )
+                ||
+                ($lastday)
             )
 
             {
-                if ($this->outputLevel > 2) echo("should sell:" . $topCoin['id']. ", change:" . $change . "<br/>");
+                if ($this->outputLevel > 2) echo("should sell:" . $topCoin['symbol']. ", change:" . $change . "<br/>");
                 $result = true;
             }
         }
@@ -305,7 +307,6 @@ class simulation
                 AND coinstats.symbol = coins.symbol 
                 and timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
-                and notes != 'histdata'
                 group by Date(from_unixtime(timestamp)), coinstats.symbol
                 order by market_cap_usd
                 limit ". 5*(round($this->portfolioMaxLength)) ."
@@ -335,7 +336,6 @@ class simulation
                 where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
                 and " . $this->getClause($this->portfolio) . "
-                and notes != 'histdata'
                 group by Date(from_unixtime(timestamp)) , symbol
                 order by market_cap_usd
                 limit ". 5*round($this->portfolioMaxLength) ."
@@ -360,8 +360,9 @@ class simulation
     public function run()
     {
         $topCoins = false;
+        $lasttopCoinsData = false;
         for ($t = 0; $t < $this->simDays; $t++) {
-            if ($this->outputLevel > 0) echo "<hr/>Day " . $t . "<br/>";
+
 
             $timestamp = $this->simStartTimestamp + $t * $this->oneDay;
             if ($topCoins)
@@ -370,12 +371,17 @@ class simulation
             }
             $topCoins = $this->getTopCoins($timestamp);
 
-            if ($topCoins) {
+            if ($topCoins)
+            {
+                if ($this->outputLevel > 0) echo "<hr/>Day " . $t . "<br/>";
+                $lasttopCoinsData = $topCoins;
                 /*** sell first ****/
                 $positionInTopCoins = 1;
-                foreach ($topCoins as $topCoin) {
-                    if ($this->shouldSell($topCoin, $positionInTopCoins,$t)) {
-                        $this->sellCoin($topCoin, $this->portfolio[$topCoin['id']]);
+                foreach ($topCoins as $topCoin)
+                {
+                    if ($this->shouldSell($topCoin,$t))
+                    {
+                        $this->sellCoin($topCoin, $this->portfolio[$topCoin['symbol']]);
                     }
                     $positionInTopCoins++;
                 }
@@ -387,10 +393,10 @@ class simulation
                 foreach ($topCoins as $topCoin)
                 {
                     if ($topCoin['notes'] == 'xxxxx') $perWeek = true;
-                    if ($i < $this->portfolioMaxLength && !array_key_exists($topCoin['id'], $this->portfolio)) {
+                    if ($i < $this->portfolioMaxLength && !array_key_exists($topCoin['symbol'], $this->portfolio)) {
                         if ($this->shouldBuy($topCoin,$timestamp,$perWeek) && $this->currentSavings > 0)
                         {
-                            $toBuy[$topCoin['id']] = $topCoin;
+                            $toBuy[$topCoin['symbol']] = $topCoin;
                             $nrToBuy++;
                             $i++;
                         }
@@ -408,16 +414,33 @@ class simulation
 
                 $i = 0;
                 foreach ($toBuy as $coin) {
-                    if ($i < $this->portfolioMaxLength) $this->buyCoin($coin['id'], $coin);
+                    if ($i < $this->portfolioMaxLength) $this->buyCoin($coin['symbol'], $coin);
                 }
 
                 $portfolioVal = round($this->portFolioValue());
                 if ($this->outputLevel > 0) $this->displayFolio();
                 if ($this->outputLevel > 0) echo "<hr/><div style='background-color:lightblue'>tot value : " . round($this->currentSavings + $portfolioVal) . "( total growth:" . (-100 + round(100 * ($this->currentSavings + $portfolioVal) / $this->initialSavings)) . "% ) " . " (in savings:" . round($this->currentSavings) . ", in portfolio:" . $portfolioVal . ")</div>";
                 if ($this->outputLevel > 0) echo "<hr/>buy Amount  " . round($this->defaultBuyAmount) . "<br/><hr/>";
-
             }
         }
+
+        /* sell everything */
+        if ($lasttopCoinsData)
+        {
+            echo "sell everyting on last day based on last known data<br/>";
+            foreach ($lasttopCoinsData as $topCoin)
+            {
+                if ($this->shouldSell($topCoin,$t, true))
+                {
+
+                    $this->sellCoin($topCoin, $this->portfolio[$topCoin['symbol']]);
+                }
+                $positionInTopCoins++;
+            }
+        }
+
+
+
     }
 
     public function showResults()
