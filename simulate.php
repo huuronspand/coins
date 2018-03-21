@@ -28,6 +28,9 @@ class simulation
     var $reInvestProfit;
     var $sellEveryNrOfDays;
     var $topCoinsPrev;
+    var $buySellFixedDays;
+    var $buyDay;
+    var $sellDay;
 
     public function __construct(     $initialSavings = 10000,
                                      $savingsInCoins      = 0,
@@ -36,7 +39,10 @@ class simulation
                                      $simDays= 10,
                                      $outputLevel = true,
                                      $reInvestProfit = true,
-                                     $sellEveryNrOfDays = 0)
+                                     $sellEveryNrOfDays = 0,
+                                     $buySellFixedDays = false,
+                                     $buyDay = 0,
+                                     $sellDay = 0)
     {
         $this->oneDay  = 24 * 60 * 60;
         $this->init(    $initialSavings ,
@@ -46,7 +52,10 @@ class simulation
                         $simDays,
                         $outputLevel,
                         $reInvestProfit,
-                        $sellEveryNrOfDays);
+                        $sellEveryNrOfDays,
+                        $buySellFixedDays,
+                        $buyDay = 0,
+                        $sellDay = 0);
     }
 
     public function init(   $initialSavings = 10000,
@@ -56,13 +65,20 @@ class simulation
                             $simDays= 10,
                             $outputLevel = true,
                             $reInvestProfit=true,
-                            $sellEveryNrOfDays = 0)
+                            $sellEveryNrOfDays = 0,
+                            $buySellFixedDays  = false,
+                            $buyDay = 5,
+                            $sellDay = 1)
     {
         $this->initialSavings      = $initialSavings;
         $this->currentSavings      = $this->initialSavings;
         $this->savingsInCoins      = $savingsInCoins;
         $this->defaultBuyAmount    = $defaultBuyAmount;
+        $this->buyDay = $buyDay;
+        $this->sellDay = $sellDay;
+
         $this->sellEveryNrOfDays     = $sellEveryNrOfDays;
+        $this->buySellFixedDays  = $buySellFixedDays;
         $this->portfolioMaxLength = round($this->currentSavings / $this->defaultBuyAmount);
         $this->topCoins = array();
         $this->portfolio = array();
@@ -183,52 +199,66 @@ class simulation
     {
         $result = false;
         $change_1 = false;
-        if ($perWeek)
+
+        if ($this->buySellFixedDays )
         {
-            $daysBack = 7 * $this->oneDay;
+            if ($topCoin['dayNr'] == $this->buyDay) {$result = true;}
         }
         else
         {
-            $daysBack = 1 * $this->oneDay;
-        }
-        if ($this->topCoinsPrev)
-        {
-            foreach ($this->topCoinsPrev as $t) {
-                if ($t['symbol'] == $topCoin['symbol'])
-                {
-                    if ($perWeek)
+            if ($perWeek)
+            {
+                $daysBack = 7 * $this->oneDay;
+            }
+            else
+            {
+                $daysBack = 1 * $this->oneDay;
+            }
+            if ($this->topCoinsPrev)
+            {
+                foreach ($this->topCoinsPrev as $t) {
+                    if ($t['symbol'] == $topCoin['symbol'])
                     {
-                        $change_1 = $t['percent_change_7d'];
-                    }
-                    else
-                    {
-                        $change_1 = $t['percent_change_24h'];
+                        if ($perWeek)
+                        {
+                            $change_1 = $t['percent_change_7d'];
+                        }
+                        else
+                        {
+                            $change_1 = $t['percent_change_24h'];
+                        }
+
                     }
 
                 }
+            }
+            if (!$change_1)
+            {
+                $change_1 = $this->getChange($topCoin['symbol'],$timestamp - $daysBack, $perWeek);
+            }
+
+            //$change_2 = $this->getChange($topCoin['symbol'],$timestamp - 2 * $this->oneDay);
+            if($perWeek)
+            {
+                $change = $topCoin['percent_change_7d'];
+            }
+            else
+            {
+                $change = $topCoin['percent_change_24h'];
+            }
+
+            if ( $change_1 &&  ($change > $change_1) )
+            {
+                $result = true;
+            }
+            if ($result)
+            {
+                if ($this->outputLevel > 1) echo("should buy:". $topCoin['symbol'] . ",thursdaySaturday:". $this->thursdaySaturday . ":" . $change. " : " . $change_1." : " /*. $change_2 */." <br/>");
 
             }
         }
-        if (!$change_1)
-        {
-            $change_1 = $this->getChange($topCoin['symbol'],$timestamp - $daysBack, $perWeek);
-        }
 
-        //$change_2 = $this->getChange($topCoin['symbol'],$timestamp - 2 * $this->oneDay);
-        if($perWeek)
-        {
-            $change = $topCoin['percent_change_7d'];
-        }
-        else
-        {
-            $change = $topCoin['percent_change_24h'];
-        }
 
-        if ( $change_1 &&  ($change > $change_1) )
-        {
-            if ($this->outputLevel > 2) echo("should buy:". $topCoin['symbol'] . ":" . $change. " : " . $change_1." : " /*. $change_2 */." <br/>");
-            $result = true;
-        }
 
         return $result;
     }
@@ -240,28 +270,40 @@ class simulation
         {
             $change = ($topCoin['price_usd'] / $this->portfolio[$topCoin['symbol']]['price_usd']);
 
-            if
-            (
-                /* sell portfolio after x days? */
-                (   $this->sellEveryNrOfDays > 0 &&
-                    $simDay > 0 &&
-                    ($simDay % $this->sellEveryNrOfDays == 0)
-                )
-                ||
-                (
-                    $change > 1.03/////
-                )
-                ||
-                ($lastday)
-            )
-
+            if ($this->buySellFixedDays)
             {
-                if ($this->outputLevel > 2) echo("should sell:" . $topCoin['symbol']. ", change:" . $change . "<br/>");
-                $result = true;
+                if ($topCoin['dayNr'] == $this->sellDay) {$result = true;}
             }
+            else
+            {
+                if
+                (
+                    /* sell portfolio after x days? */
+                    (   $this->sellEveryNrOfDays > 0 &&
+                        $simDay > 0 &&
+                        ($simDay % $this->sellEveryNrOfDays == 0)
+                    )
+                    ||
+                    (
+                        $change > 1.03/////
+                    )
+                    ||
+                    ($lastday)
+
+                )
+
+                {
+                       $result = true;
+                }
+            }
+
         }
 
+        if ($result)
+        {
+            if ($this->outputLevel > 1) echo("should sell:" . $topCoin['symbol'].",thursdaySaturday:". $this->thursdaySaturday  .  ", change:" . $change . "<br/>");
 
+        }
         return $result;
     }
 
@@ -290,7 +332,8 @@ class simulation
                       avg(coinstats.`percent_change_1h`) as percent_change_1h, 
                       avg(coinstats.`percent_change_24h`) as `percent_change_24h`, 
                       avg(coinstats.`percent_change_7d`) as `percent_change_7d`,
-                      max(coinstats.notes)  as notes
+                      max(coinstats.notes)  as notes,
+                      max(dayofweek(from_unixtime(coinstats.`timestamp`))) dayNr /* 1= sunday */
                 FROM coinstats.coinstats, 
                 ( select  bittrexSymbol symbol
                   from    coinstats.coins_bittrex
@@ -331,7 +374,8 @@ class simulation
                       avg(coinstats.`percent_change_1h`) as percent_change_1h, 
                       avg(coinstats.`percent_change_24h`) as `percent_change_24h`, 
                       avg(coinstats.`percent_change_7d`) as `percent_change_7d`,
-                       max(coinstats.notes)  as notes
+                       max(coinstats.notes)  as notes,
+                       max(dayofweek(from_unixtime(coinstats.`timestamp`))) dayNr
                 FROM coinstats.coinstats
                 where timestamp between unix_timestamp(Date(from_unixtime(" . $timestamp . "))) 
                                 and  unix_timestamp(Date(from_unixtime(" . ($timestamp + $this->oneDay) . ")))
@@ -343,6 +387,7 @@ class simulation
             ) tmp3
             group by Date(from_unixtime(timestamp)), symbol
             order by market_cap_usd desc";
+
         if ($this->outputLevel > 2) echo('<hr/>' . nl2br($sql) . '<hr/>');
         $result = $db->query($sql);
 
@@ -458,7 +503,7 @@ class simulation
                         <th width='130'>start day</th> 
                         <th width='130'>nrOfDays</th> 
                         <th width='130'>sellEvery</th>                         
-
+                        <th width='130'>buy-sell OnFixedDays (1=sunday)</th> 
                     </tr>
                     
                     <tr  style='text-align:left'>
@@ -473,6 +518,7 @@ class simulation
                         <td>". date( 'd/m/Y',$this->simStartTimestamp) ."</td>
                         <td>". $this->simDays ."</td>
                         <td>". ($this->sellEveryNrOfDays > 0 ? $this->sellEveryNrOfDays : "disabled") ."</td>
+                        <td>". ($this->buySellFixedDays > 0 ? $this->buyDay ." - ". $this->sellDay : "disabled") ."</td>
                     </tr>
               </table><br/>";
     }
@@ -613,6 +659,14 @@ $sim->init(10000, $startSaving, 5000, $startTimestamp, $nrOfDays, $outputLevel, 
 $sim->run();
 $sim->showResults();
 */
-$sim->init(10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true,$sellEveryNrOfDays);
+
+$sim->init( 10000, $startSaving, 1000, $startTimestamp, $nrOfDays, $outputLevel, true,$sellEveryNrOfDays,
+    true, /* buy and sell on fixed days */
+    1, /* buy fixed day */
+    3 /* sell fixed day */);
 $sim->run();
 $sim->showResults();
+
+
+
+

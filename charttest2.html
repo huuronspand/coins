@@ -22,7 +22,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'avg % change 24h',
+                        label: 'rendement bij aankoop zaterdagochtend en verkoop maandagochtend vanaf 20180101',
                         data: data,
                         backgroundColor: [
                             'rgba(255, 99, 132, 0.2)',
@@ -58,15 +58,15 @@
         {
             $.ajax({
                 dataType: "json",
-                url: 'api/weekdata.php',
+                url: 'api/weekdata2.php',
                 data: '',
                 success: function(data)
-                {
+                {console.log(data);
                     let l = [];
                     let d = [];
                     for (let rec in  data.result)
                     {
-                        l.push(data.result[rec].dayName);
+                        l.push(data.result[rec].symbol);
                         d.push(data.result[rec].perc_change);
                     };
                     showChart(l,d)

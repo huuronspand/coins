@@ -16,12 +16,46 @@ function getData()
     {
         global $db;
         $sql = "
-                SELECT DAYOFWEEK(from_unixtime(timestamp)) dayNr, dayname(from_unixtime(timestamp)) dayName,
-                round(avg(percent_change_24h),2) perc_change,
-                count(*) samples
-                from coinstats
-                group by DAYOFWEEK(from_unixtime(timestamp)), dayname(from_unixtime(timestamp))
-  ";
+select symbol, sum(perc_change) perc_change
+from 
+(
+          SELECT 
+        concat(year(FROM_UNIXTIME(timestamp)),'-',WEEK(FROM_UNIXTIME(timestamp))) week,
+        coinstats.symbol,
+            max(DAYOFWEEK(FROM_UNIXTIME(timestamp))) dayNr,
+            SUM(ROUND(percent_change_24h, 2)) perc_change,
+            COUNT(*) samples,
+            AVG(24h_volume_usd) avg_24h_volume_usd ,
+            AVG(market_cap_usd) avg_market_cap_usd
+    FROM
+        coinstats
+    WHERE DAYNAME(FROM_UNIXTIME(timestamp)) IN ( 'Saturday', 'Sunday', 'Monday')
+    AND 24h_volume_usd > 10000000 
+    AND year(FROM_UNIXTIME(timestamp)) = '2018'
+    AND SYMBOL in ('BTC',
+'ETH',
+'XRP',
+'BCH',
+'LTC',
+'ADA',
+'XLM',
+'NEO',
+'EOS',
+'MIOTA',
+'DASH',
+'XEM',
+'XMR',
+'TRX',
+'USDT',
+'ETC',
+'LSK',
+'BCH')
+    GROUP BY concat(year(FROM_UNIXTIME(timestamp)),'-',WEEK(FROM_UNIXTIME(timestamp))) , coinstats.symbol
+    ORDER BY timestamp ,avg_market_cap_usd desc , coinstats.symbol
+) tmp
+GROUP BY symbol
+               
+                ";
 
         $result = $db->query($sql,PDO::FETCH_ASSOC);
 
