@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+    <title>Pure CSS Percentage Circle</title>
+
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+
+    <!-- styles for this little demo page -->
+    <style type="text/css">
+
+        body{
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        }
+
+        .page {
+            margin: 40px;
+        }
+
+        h1{
+            margin: 40px 0 60px 0;
+        }
+
+        .dark-area {
+            background-color: #666;
+            padding: 40px;
+            margin: 0 -40px 20px -40px;
+            clear: both;
+        }
+
+        .clearfix:before,.clearfix:after {content: " "; display: table;}
+        .clearfix:after {clear: both;}
+        .clearfix {*zoom: 1;}
+
+    </style>
+
+    <link rel="stylesheet" href="css/circle.css">
+
+</head>
+
+<body>
+
+<div class="page">
+
+    <h1>Pure CSS Percentage Circle - circle100</h1>
+
+    <!-- default -->
+    <div class="clearfix">
+
+        <div class="big c100 p50">
+            <span>50%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+        <div class="c100 p25">
+            <span>25%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+        <div class="small c100 p1">
+            <span>1%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /default -->
+
+    <!-- green -->
+    <div class="clearfix">
+
+        <div class="big green c100 p50 ">
+            <span>50%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+        <div class="green c100 p25">
+            <span>25%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+        <div class="green c100 p12 small">
+            <span>12%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /green -->
+
+    <!-- orange -->
+    <div class="clearfix">
+
+        <div class="big orange c100 p50">
+            <span>50%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+        <div class="orange c100 p25">
+            <span>25%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+        <div class="orange small c100 p12">
+            <span>12%</span>
+            <div class="slice">
+                <div class="bar"></div>
+                <div class="fill"></div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /orange -->
+
+
+
+
+    <div class="dark-area clearfix">
+
+        <!-- default -->
+        <div class="clearfix">
+
+            <div class="big dark c100 p50">
+                <span>50%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+            <div class="dark c100 p25">
+                <span>25%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+            <div class="dark c100 p12 small">
+                <span>12%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /default -->
+
+        <!-- green -->
+        <div class="clearfix">
+
+            <div class="big dark green c100 p50">
+                <span>50%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+            <div class="dark green c100 p25">
+                <span>25%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+            <div class="dark small green c100 p12">
+                <span>12%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /green -->
+
+        <!-- orange -->
+        <div class="clearfix">
+
+            <div class="dark big orange c100 p50">
+                <span>50%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+            <div class="dark orange c100 p25">
+                <span>25%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+            <div class="dark small orange c100 p12">
+                <span>12%</span>
+                <div class="slice">
+                    <div class="bar"></div>
+                    <div class="fill"></div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /orange -->
+
+    </div><!-- /.dark-area -->
+</div>
+<script>
+
+    function progress(step)
+    {
+        $('.c100').each(function()
+        {
+            if ($.data(this,'ready')) return true;
+            var classes = $(this).attr('class');
+
+            var p = classes.indexOf('c100 p');
+            if (p >=0)
+            {
+                var c2 = classes.substr(0,p+6);
+                var currentPercentage = classes.substr(p+6,3);
+                try {currentPercentage = parseInt(currentPercentage)+step} catch(e){}
+                if (currentPercentage >=0)
+                {
+                    if (currentPercentage >= 100)
+                    {
+                        currentPercentage = currentPercentage - 100;
+                        //$.data(this,'ready', true);
+                    }
+                    c2 = c2 + currentPercentage  + classes.substr(p+8);
+
+                    $(this).attr('class',c2);
+                    $(this).find('span').html(currentPercentage + '%');
+
+                }
+
+            }
+        })
+    }
+
+    setInterval(function(){progress(1)},100);
+
+</script>
+</body>
+</html>
