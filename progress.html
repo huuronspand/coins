@@ -239,49 +239,85 @@
     </div><!-- /.dark-area -->
 </div>
 <script>
+    function onLoadingClick()
+    {
 
+        var state = $.data(this,'state');
+
+        if (!state)               state = 'pause';
+        else if (state == 'play') state = 'pause';
+        else                      state = 'play';
+
+        $.data(this,'state',state);
+        if (state == 'pause')
+        {
+            var interval = setInterval(function(){progress(5,$(this).parent()[0])}.bind(this),250);
+            $.data(this,'interval', interval);
+        }
+        else clearInterval($.data(this,'interval'));
+
+        $(this).html( '<i class="fas fa-'+state+'"></i>');
+    }
+
+    function plaatsNewElem(elem)
+    {
+        var perc = Math.floor(Math.random()*100);
+        var x = Math.floor(Math.random()*$(window).width() );
+        var y = Math.floor(Math.random()*$(window).height()) ;
+        $(elem).attr('class','c100');
+        $(elem).addClass('p'+perc);
+        $(elem).css('position','absolute');
+        $(elem).css('top',y+'px');
+        $(elem).css('left',x+'px');
+        $.data(elem[0],'state',null);
+        $.data($(elem).find('SPAN')[0],'interval',null);
+        $.data(elem[0],'percentage' ,perc);
+
+        $(elem).appendTo(document.body);
+
+        // re-tarter element & set click listener
+        $(elem).find('SPAN').click(onLoadingClick);
+    }
     function progress(step,elem)
     {
             var percentage = $.data(elem,'percentage');
+                //if (!percentage) percentage = 0;
             $(elem).removeClass('p'+percentage);
             percentage = percentage + step;
-            if (percentage> 100) percentage = 0;
+
+            // on finish loading
+            if ((percentage >= 100)  ) {
+                percentage = 100;
+                $(elem).addClass('finished');
+                var color = $(elem).find('.slice').find('.bar').css('border-color');
+                $(elem).find('SPAN').html( '<i class="fas fa-check x9" style="color:'+ color+'"></i>');
+
+                $(elem).addClass('p'+percentage);
+                $.data(elem,'percentage' ,percentage);
+                clearInterval($.data($(elem).find('SPAN')[0],'interval'));
+
+                // clone after finish
+                var newElem = $(elem).clone();
+                setTimeout(function(){plaatsNewElem(newElem)},2000);
+            }
             $(elem).addClass('p'+percentage);
             $.data(elem,'percentage' ,percentage);
-
-            //$(this).find('span').html(percentage + '%');
-
 
 
     }
 
+    // initialize dingen
     $('.c100').each(function()
     {
         var perc = Math.floor(Math.random()*100);
         $.data(this,'percentage' ,perc);
         $(this).addClass('p'+perc)
         $(this).find('SPAN').html('<i class="fas fa-play"></i>');
-    })
+    });
 
-$('.c100>SPAN').click(function()
-{
+    // set click listeners
+    $('.c100>SPAN').click(onLoadingClick);
 
-    var state = $.data(this,'state');
-
-    if (!state)               state = 'pause';
-    else if (state == 'play') state = 'pause';
-    else                      state = 'play';
-
-    $.data(this,'state',state);
-    if (state == 'pause')
-    {
-        var interval = setInterval(function(){progress(5,$(this).parent()[0])}.bind(this),250);
-        $.data(this,'interval', interval);
-    }
-    else clearInterval($.data(this,'interval'));
-
-    $(this).html( '<i class="fas fa-'+state+'"></i>');
-});
 
 
     //setInterval(function(){progress(1)},250);

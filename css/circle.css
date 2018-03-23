@@ -240,7 +240,8 @@
 
 
 
-
+  /******/
+  transition: all 540ms;
 
 
 
@@ -1077,4 +1078,15 @@
 }
 .c100.orange.dark:hover > span {
   color: #e08833;
+}
+
+@keyframes finishedAnimation {
+  0%   {transform: scale(1)}
+  70%  {transform: scale(1.2)}
+  100% {transform: scale(0)}
+}
+
+.finished
+{
+  animation: finishedAnimation 1s forwards;
 }
