@@ -251,7 +251,7 @@
         $.data(this,'state',state);
         if (state == 'pause')
         {
-            var interval = setInterval(function(){progress(5,$(this).parent()[0])}.bind(this),250);
+            var interval = setInterval(function(){progress(1,$(this).parent()[0])}.bind(this),250);
             $.data(this,'interval', interval);
         }
         else clearInterval($.data(this,'interval'));
@@ -277,6 +277,7 @@
 
         // re-tarter element & set click listener
         $(elem).find('SPAN').click(onLoadingClick);
+        $(elem).find('SPAN').click();
     }
     function progress(step,elem)
     {
@@ -298,7 +299,9 @@
 
                 // clone after finish
                 var newElem = $(elem).clone();
-                setTimeout(function(){plaatsNewElem(newElem)},2000);
+                var newElem2 = $(elem).clone();
+                setTimeout(function(){plaatsNewElem(newElem)},1000);
+                setTimeout(function(){plaatsNewElem(newElem2)},2000);
             }
             $(elem).addClass('p'+percentage);
             $.data(elem,'percentage' ,percentage);
@@ -317,11 +320,111 @@
 
     // set click listeners
     $('.c100>SPAN').click(onLoadingClick);
+    $('.c100>SPAN').click();
 
+    var queue = function() {
+        var items = [];
+        this.enqueue = function (item) {
+            if (typeof(items) === 'undefined') {
+                items = [];
+            }
 
+            items.push(item);
+            console.log("queue:");
+            console.log(items);
+        }
 
+        this.dequeue = function () {
+            return items.shift();
+        }
+
+        this.remove = function (itemRemove) {
+            var tmpItems = [];
+            var tmpRemoved = [];
+
+            $.each(items, function (i, item) {
+                if (item == itemRemove) {
+                    tmpRemoved.push(item);
+                }
+                else {
+                    tmpItems.push(item)
+                }
+            });
+            items = tmpItems;
+            return tmpRemoved;
+        }
+
+        this.processItem = function (item, callbackFunction, timeOut)
+        {
+            //console.log('process item', item);
+            if (!timeOut) {
+                timeOut = 100;
+                setTimeout(function ()
+                {
+                    //console.log('item ready!');
+                    item.ready = true
+                }, 500)
+            }
+
+            //console.log(timeOut);
+            if (timeOut > 0) {
+                if (!item.ready) {
+                    setTimeout(function () {
+                        this.processItem(item, callbackFunction, --timeOut)
+                    }.bind(this), 100)
+                }
+                else {
+                    /* process next item */
+                    this.processNextItem();
+                    return true;
+                }
+
+            }
+            else {
+                item.ready = true;
+                item.error = true;
+            }
+
+        }
+
+        this.showAll = function () {
+            return items;
+        }
+
+        this.processNextItem = function () {
+
+            var item = this.dequeue();
+            if (item) {
+                console.log('processNextItem', item);
+                this.processItem(item, this.processQueue);
+            }
+            else
+            {
+                console.log('queue leeg!!');
+            }
+        }
+    }
     //setInterval(function(){progress(1)},250);
+    var q = new queue();
+    q.enqueue({a:1});
+    q.enqueue({a:2});
+    q.enqueue({a:3});
+    q.enqueue({a:4});
+    q.enqueue({a:5});
+    q.enqueue({a:6});
+    q.enqueue({a:7});
+    q.enqueue({a:8});
+    q.enqueue({a:9});
+    q.enqueue({a:0});
+    q.enqueue({a:1});
+    q.enqueue({a:2});
+    q.enqueue({a:3});
+    q.enqueue({a:4});
+    q.enqueue({a:5});
+    q.enqueue({a:6});
+    q.enqueue({a:7});
 
+    q.processNextItem();
 </script>
 </body>
 </html>
